@@ -1,0 +1,73 @@
+{
+	"info": {
+		"_postman_id": "9000fc60-66ce-4a19-a7e7-aee5b73f9aac",
+		"name": "FulfillX",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "35229126"
+	},
+	"item": [
+		{
+			"name": "Order-service",
+			"item": [
+				{
+					"name": "Create Order",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"customerId\": 1,\n  \"shippingAddress\": {\n    \"recipientName\": \"Fatemeh\",\n    \"phoneNumber\": \"09120000000\",\n    \"province\": \"Tehran\",\n    \"city\": \"Tehran\",\n    \"addressLine\": \"Example Street\",\n    \"postalCode\": \"1234567890\"\n  },\n  \"currency\": \"IRR\",\n  \"items\": [\n    {\n      \"productId\": 100,\n      \"productName\": \"Lipstick\",\n      \"unitPrice\": 500000,\n      \"quantity\": 2\n    }\n  ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{orderServiceUrl}}/api/v1/orders",
+							"host": [
+								"{{orderServiceUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"orders"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "orderServiceUrl",
+			"value": "http://localhost:8080"
+		}
+	]
+}
