@@ -1,6 +1,6 @@
 package com.fulfillx.order.domain.dto;
 
-import com.fulfillx.order.domain.model.ShippingAddress;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
@@ -9,6 +9,10 @@ import jakarta.validation.constraints.NotNull;
 import java.util.List;
 
 public record CreateOrderRequest(
+        @Schema(
+                description = "Customer identifier",
+                example = "1"
+        )
         @NotNull
         Long customerId,
 
@@ -16,6 +20,10 @@ public record CreateOrderRequest(
         @Valid
         ShippingAddressRequest shippingAddress,
 
+        @Schema(
+                description = "Order currency",
+                example = "IRR"
+        )
         @NotBlank
         String currency,
 
