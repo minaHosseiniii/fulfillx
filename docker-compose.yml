@@ -1,0 +1,15 @@
+services:
+  order-db:
+    image: postgres:16.2
+    container_name: fulfillx-order-db
+    environment:
+      POSTGRES_DB: fulfillx_order
+      POSTGRES_PASSWORD: root
+      POSTGRES_USER: postgres
+
+    ports:
+      - "5433:5432"
+    volumes:
+      - order-db-data:/var/lib/postgresql/data
+volumes:
+  order-db-data:
