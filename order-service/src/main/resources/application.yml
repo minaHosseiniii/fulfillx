@@ -2,14 +2,5 @@ spring:
   application:
     name: order-service
 
-  datasource:
-    url: jdbc:postgresql://localhost:5433/fulfillx_order
-    username: postgres
-    password: root
-
-  jpa:
-    hibernate:
-      ddl-auto: validate
-
-  flyway:
-    enabled: true
+  config:
+    import: configserver:http://localhost:8888
