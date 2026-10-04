@@ -8,4 +8,5 @@ spring:
     config:
       server:
         git:
-          uri: file://${user.home}/Desktop/fulfillx/config-repo
+          uri: file://${user.home}/Desktop/fulfillx
+          search-paths: config-repo
