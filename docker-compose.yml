@@ -24,6 +24,23 @@ services:
       - "5434:5432"
     volumes:
       - customer-db-data:/var/lib/postgresql/data
+
+
+  catalog-db:
+    image: postgres:16.2
+    container_name: fulfillx-catalog-db
+    environment:
+      POSTGRES_DB: fulfillx_catalog
+      POSTGRES_PASSWORD: root
+      POSTGRES_USER: postgres
+
+    ports:
+      - "5435:5432"
+    volumes:
+      - catalog-db-data:/var/lib/postgresql/data
+
+
 volumes:
   order-db-data:
   customer-db-data:
+  catalog-db-data:
