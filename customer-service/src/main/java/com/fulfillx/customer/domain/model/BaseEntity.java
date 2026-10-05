@@ -1,4 +1,4 @@
-package com.fulfillx.customer.domain;
+package com.fulfillx.customer.domain.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;
