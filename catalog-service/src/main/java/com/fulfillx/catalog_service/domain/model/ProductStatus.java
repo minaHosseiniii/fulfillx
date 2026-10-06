@@ -1,4 +1,4 @@
-package com.fulfillx.catalog_service.domain;
+package com.fulfillx.catalog_service.domain.model;
 
 import lombok.Getter;
 
