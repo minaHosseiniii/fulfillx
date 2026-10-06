@@ -24,14 +24,153 @@
 							}
 						},
 						"url": {
-							"raw": "{{orderServiceUrl}}/api/v1/orders",
+							"raw": "{{gatewayUrl}}/api/v1/orders",
 							"host": [
-								"{{orderServiceUrl}}"
+								"{{gatewayUrl}}"
 							],
 							"path": [
 								"api",
 								"v1",
 								"orders"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Customer-service",
+			"item": [
+				{
+					"name": "getCustomerById",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{gatewayUrl}}/api/v1/customers/2",
+							"host": [
+								"{{gatewayUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"customers",
+								"2"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "createCustomer",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"firstName\": \"Mina\",\n    \"lastName\": \"Hosseini\",\n    \"email\": \"m@gmail.com\",\n    \"phone\": \"09120000000\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{gatewayUrl}}/api/v1/customers",
+							"host": [
+								"{{gatewayUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"customers"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "updateCustomer",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"firstName\": \"Mina\",\n    \"lastName\": \"Hosseini Updated\",\n    \"email\": \"mina.updated@gmail.com\",\n    \"phone\": \"09121111111\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{gatewayUrl}}/api/v1/customers/2",
+							"host": [
+								"{{gatewayUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"customers",
+								"2"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "activateCustomer",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "PATCH",
+						"header": [],
+						"url": {
+							"raw": "{{gatewayUrl}}/api/v1/customers/2/activate",
+							"host": [
+								"{{gatewayUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"customers",
+								"2",
+								"activate"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "deactivateCustomer",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "PATCH",
+						"header": [],
+						"url": {
+							"raw": "{{gatewayUrl}}/api/v1/customers/2/deactivate",
+							"host": [
+								"{{gatewayUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"customers",
+								"2",
+								"deactivate"
 							]
 						}
 					},
@@ -66,7 +205,7 @@
 	],
 	"variable": [
 		{
-			"key": "orderServiceUrl",
+			"key": "gatewayUrl",
 			"value": "http://localhost:8080"
 		}
 	]
