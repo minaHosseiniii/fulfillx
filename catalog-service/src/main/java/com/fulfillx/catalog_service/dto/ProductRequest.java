@@ -1,29 +1,38 @@
 package com.fulfillx.catalog_service.dto;
 
 import jakarta.validation.constraints.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 
-public record ProductRequest(
+
+@AllArgsConstructor
+@NoArgsConstructor
+@Getter
+@Setter
+public class ProductRequest{
 
         @NotBlank
         @Size(max = 150)
-        String name,
+        private String name;
 
         @Size(max = 500)
-        String description,
+        private String description;
 
         @NotBlank
         @Size(max = 100)
-        String sku,
+        private String sku;
 
         @NotNull
         @DecimalMin(value = "0.0", inclusive = false)
         @Digits(integer = 17, fraction = 2)
-        BigDecimal price,
+        private BigDecimal price;
 
         @NotBlank
         @Size(min = 3, max = 3)
-        String currency
-) {
+        private String currency;
+
 }

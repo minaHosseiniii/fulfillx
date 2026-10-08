@@ -23,18 +23,18 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public ProductResponse createProduct(ProductRequest request) {
 
-        if (productRepository.existsBySku(request.sku())) {
+        if (productRepository.existsBySku(request.getSku())) {
             throw new ProductAlreadyExistException(
-                    "Product with SKU " + request.sku() + " already exists"
+                    "Product with SKU " + request.getSku() + " already exists"
             );
         }
 
         Product product = new Product(
-                request.name(),
-                request.description(),
-                request.sku(),
-                request.price(),
-                request.currency()
+                request.getName(),
+                request.getDescription(),
+                request.getSku(),
+                request.getPrice(),
+                request.getCurrency()
         );
 
         Product savedProduct = productRepository.save(product);
@@ -65,19 +65,19 @@ public class ProductServiceImpl implements ProductService {
                         new ProductNotFoundException("Product not found")
                 );
 
-        if (!product.getSku().equals(request.sku())
-                && productRepository.existsBySku(request.sku())) {
+        if (!product.getSku().equals(request.getSku())
+                && productRepository.existsBySku(request.getSku())) {
 
             throw new ProductAlreadyExistException(
-                    "Product with SKU " + request.sku() + " already exists"
+                    "Product with SKU " + request.getSku() + " already exists"
             );
         }
 
         product.update(
-                request.name(),
-                request.description(),
-                request.price(),
-                request.currency()
+                request.getName(),
+                request.getDescription(),
+                request.getPrice(),
+                request.getCurrency()
         );
 
         return productMapper.toProductResponse(product);
