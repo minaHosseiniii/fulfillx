@@ -24,4 +24,4 @@ spring:
             - id: inventory-service
               uri: lb://INVENTORY-SERVICE
               predicates:
-                -Path=/api/v1/inventory/**
+                - Path=/api/v1/inventory/**
