@@ -1,0 +1,21 @@
+server:
+  port: 8887
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5436/fulfillx_inventory
+    username: postgres
+    password: root
+
+    jpa:
+      hibernate:
+        ddl-auto: validate
+        open-in-view: false
+
+      flyway:
+        enabled: true
+
+eureka:
+  client:
+    service-url:
+      default-zone: http://localhost:8761/eureka
