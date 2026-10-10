@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "9000fc60-66ce-4a19-a7e7-aee5b73f9aac",
+		"_postman_id": "47abe149-3316-439a-9e71-75e5cfd5968a",
 		"name": "FulfillX",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "35229126"
@@ -310,6 +310,167 @@
 								"products",
 								"1",
 								"deactivate"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "inventory-service",
+			"item": [
+				{
+					"name": "createInventoryItem",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"productId\": 1,\n  \"sku\": \"IPH17P-256-BLK\",\n  \"initialQuantity\": 10\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{gatewayUrl}}/api/v1/inventory",
+							"host": [
+								"{{gatewayUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"inventory"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "getStockByProductId",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{gatewayUrl}}/api/v1/inventory/1",
+							"host": [
+								"{{gatewayUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"inventory",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "reserveStock",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"quantity\": 2\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{gatewayUrl}}/api/v1/inventory/1/reserve",
+							"host": [
+								"{{gatewayUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"inventory",
+								"1",
+								"reserve"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "releaseStock",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"quantity\": 2\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{gatewayUrl}}/api/v1/inventory/1/release",
+							"host": [
+								"{{gatewayUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"inventory",
+								"1",
+								"release"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "deductStock",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"quantity\": 2\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{gatewayUrl}}/api/v1/inventory/1/deduct",
+							"host": [
+								"{{gatewayUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"inventory",
+								"1",
+								"deduct"
 							]
 						}
 					},
