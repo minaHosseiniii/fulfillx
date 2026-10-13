@@ -46,23 +46,29 @@ public class InventoryServiceImpl implements InventoryService {
 
     @Override
     public InventoryResponse reserveStock(Long productId, int quantity) {
-        InventoryItem inventoryItem = findInventoryItem(productId);
+        InventoryItem inventoryItem = findInventoryItemForUpdate(productId);
         inventoryItem.reserve(quantity);
         return inventoryMapper.toInventoryResponse(inventoryItem);
     }
 
     @Override
     public InventoryResponse releaseStock(Long productId, int quantity) {
-        InventoryItem inventoryItem = findInventoryItem(productId);
+        InventoryItem inventoryItem = findInventoryItemForUpdate(productId);
         inventoryItem.release(quantity);
         return inventoryMapper.toInventoryResponse(inventoryItem);
     }
 
     @Override
     public InventoryResponse deductStock(Long productId, int quantity) {
-        InventoryItem inventoryItem = findInventoryItem(productId);
+        InventoryItem inventoryItem = findInventoryItemForUpdate(productId);
         inventoryItem.deduct(quantity);
         return inventoryMapper.toInventoryResponse(inventoryItem);
+    }
+
+
+    private InventoryItem findInventoryItemForUpdate(Long productId) {
+        return inventoryRepository.findByProductIdForUpdate(productId).orElseThrow(() ->
+                new InventoryNotFoundException("Inventory not found for productId: " + productId));
     }
 
     private InventoryItem findInventoryItem(Long productId) {
