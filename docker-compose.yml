@@ -66,6 +66,19 @@ services:
     volumes:
       - payment-db-data:/var/lib/postgresql/data
 
+  delivery-db:
+    image: postgres:16.2
+    container_name: fulfillx-delivery-db
+    environment:
+      POSTGRES_DB: fulfillx_delivery
+      POSTGRES_PASSWORD: root
+      POSTGRES_USER: postgres
+
+    ports:
+      - "5438:5432"
+    volumes:
+      - delivery-db-data:/var/lib/postgresql/data
+
 
 volumes:
   order-db-data:
@@ -73,3 +86,4 @@ volumes:
   catalog-db-data:
   inventory-db-data:
   payment-db-data:
+  delivery-db-data:
