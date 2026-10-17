@@ -477,6 +477,309 @@
 					"response": []
 				}
 			]
+		},
+		{
+			"name": "delivery-service",
+			"item": [
+				{
+					"name": "createDelivery",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"orderId\": 1001,\n  \"recipientName\": \"Sara Ahmadi\",\n  \"phoneNumber\": \"09123456789\",\n  \"province\": \"Tehran\",\n  \"city\": \"Tehran\",\n  \"addressLine\": \"Valiasr Street, No. 25\",\n  \"postalCode\": \"1234567890\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{gatewayUrl}}/api/v1/deliveries",
+							"host": [
+								"{{gatewayUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"deliveries"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "getDeliveryById",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{gatewayUrl}}/api/v1/deliveries/1",
+							"host": [
+								"{{gatewayUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"deliveries",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "getDeliveryByOrderId",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{gatewayUrl}}/api/v1/deliveries/order/1001",
+							"host": [
+								"{{gatewayUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"deliveries",
+								"order",
+								"1001"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "preparingStatus",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{gatewayUrl}}/api/v1/deliveries/1/preparing",
+							"host": [
+								"{{gatewayUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"deliveries",
+								"1",
+								"preparing"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "readyForPickupStatus",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{gatewayUrl}}/api/v1/deliveries/1/ready-for-pickup",
+							"host": [
+								"{{gatewayUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"deliveries",
+								"1",
+								"ready-for-pickup"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "inTransientStatus",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "PATCH",
+						"header": [],
+						"url": {
+							"raw": "{{gatewayUrl}} /api/v1/deliveries/1/in-transit?trackingNumber=TRK-1001",
+							"host": [
+								"{{gatewayUrl}} "
+							],
+							"path": [
+								"api",
+								"v1",
+								"deliveries",
+								"1",
+								"in-transit"
+							],
+							"query": [
+								{
+									"key": "trackingNumber",
+									"value": "TRK-1001"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "deliveredStatus",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{gatewayUrl}} /api/v1/deliveries/1/delivered",
+							"host": [
+								"{{gatewayUrl}} "
+							],
+							"path": [
+								"api",
+								"v1",
+								"deliveries",
+								"1",
+								"delivered"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "failedStatus",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{gatewayUrl}} /api/v1/deliveries/1/failed?reason=Customer-unavailable",
+							"host": [
+								"{{gatewayUrl}} "
+							],
+							"path": [
+								"api",
+								"v1",
+								"deliveries",
+								"1",
+								"failed"
+							],
+							"query": [
+								{
+									"key": "reason",
+									"value": "Customer-unavailable"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "cancelStatus",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{gatewayUrl}}  /api/v1/deliveries/1/cancel",
+							"host": [
+								"{{gatewayUrl}}  "
+							],
+							"path": [
+								"api",
+								"v1",
+								"deliveries",
+								"1",
+								"cancel"
+							]
+						}
+					},
+					"response": []
+				}
+			]
 		}
 	],
 	"event": [
