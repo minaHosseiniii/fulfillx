@@ -11,7 +11,6 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
-import org.springframework.web.method.annotation.HandlerMethodValidationException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import java.time.LocalDateTime;
@@ -45,23 +44,6 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 headers,
                 HttpStatus.BAD_REQUEST
         );
-    }
-
-
-    @ExceptionHandler(HandlerMethodValidationException.class)
-    public ResponseEntity<ErrorResponse> handleHandlerMethodValidation(
-            HandlerMethodValidationException ex,
-            WebRequest request) {
-
-        ErrorResponse errorResponse = buildErrorResponse(
-                "One or more request parameters are invalid.",
-                HttpStatus.BAD_REQUEST,
-                request
-        );
-
-        return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(errorResponse);
     }
 
 
