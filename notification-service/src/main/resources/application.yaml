@@ -4,3 +4,9 @@ spring:
 
   config:
     import: configserver:http://localhost:8888
+
+logging:
+  level:
+    org.springframework.kafka: DEBUG
+    org.springframework.boot.autoconfigure.kafka: DEBUG
+    org.apache.kafka.clients.consumer: INFO
