@@ -100,6 +100,19 @@ services:
     volumes:
       - kafka-data:/var/lib/kafka/data
 
+  notification-db:
+    image: postgres:16.2
+    container_name: fulfillx-notification-db
+    environment:
+      POSTGRES_DB: fulfillx_notification
+      POSTGRES_PASSWORD: root
+      POSTGRES_USER: postgres
+
+    ports:
+      - "5439:5432"
+    volumes:
+      - notification-db-data:/var/lib/postgresql/data
+
 
 volumes:
   order-db-data:
@@ -109,3 +122,4 @@ volumes:
   payment-db-data:
   delivery-db-data:
   kafka-data:
+  notification-db-data:
