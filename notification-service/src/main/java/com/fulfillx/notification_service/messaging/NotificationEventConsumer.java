@@ -1,5 +1,6 @@
 package com.fulfillx.notification_service.messaging;
 
+import com.fulfillx.notification_service.events.NotificationEvent;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
@@ -10,7 +11,9 @@ public class NotificationEventConsumer {
             topics = "notification-events",
             groupId = "notification-service"
     )
-    public void consume(String message) {
-        System.out.println("received notification event: " + message);
+    public void consume(NotificationEvent notificationEvent) {
+        System.out.println("Received notification event:");
+        System.out.println("Event: " + notificationEvent.event());
+        System.out.println("Message: " + notificationEvent.message());
     }
 }
