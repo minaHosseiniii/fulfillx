@@ -14,7 +14,7 @@ target/
 .DS_Store
 Thumbs.db
 
-# Environment / secrets
+# Local secrets
 .env
 .env.*
 !.env.example

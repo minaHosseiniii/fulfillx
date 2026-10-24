@@ -8,10 +8,10 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class EmailSender implements NotificationSender {
-    private final JavaMailSender javaMailSender;
+    private final JavaMailSender mailSender;
 
-    public EmailSender(JavaMailSender javaMailSender) {
-        this.javaMailSender = javaMailSender;
+    public EmailSender(JavaMailSender mailSender) {
+        this.mailSender = mailSender;
     }
 
     @Override
