@@ -27,6 +27,21 @@ spring:
         spring.json.value.default.type: com.fulfillx.notification_service.events.NotificationEvent
         spring.json.trusted.packages: com.fulfillx.notification_service.events
 
+  mail:
+    host: ${MAILTRAP_HOST:sandbox.smtp.mailtrap.io}
+    port: ${MAILTRAP_PORT:2525}
+    username: ${MAILTRAP_USERNAME}
+    password: ${MAILTRAP_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+          connectiontimeout: 5000
+          timeout: 3000
+          writetimeout: 5000
+
 eureka:
   client:
     service-url:
