@@ -3,6 +3,7 @@ package com.fulfillx.notification_service.service.impl;
 import com.fulfillx.notification_service.domain.model.Notification;
 import com.fulfillx.notification_service.events.NotificationEvent;
 import com.fulfillx.notification_service.events.NotificationEventType;
+import com.fulfillx.notification_service.exception.InvalidNotificationEventException;
 import com.fulfillx.notification_service.repository.NotificationRepository;
 import com.fulfillx.notification_service.service.NotificationProcessingService;
 import lombok.RequiredArgsConstructor;
@@ -26,7 +27,7 @@ public class NotificationProcessingServiceImpl implements NotificationProcessing
         }
 
         if (notificationRepository.existsByEventId(notificationEvent.eventId())) {
-            throw new IllegalArgumentException("Notification event already exists");
+            throw new InvalidNotificationEventException("Notification event already exists");
         }
 
         String subject = getSubject(notificationEvent.eventType());

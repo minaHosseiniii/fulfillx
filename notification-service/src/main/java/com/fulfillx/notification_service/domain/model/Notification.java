@@ -51,4 +51,14 @@ public class Notification {
         this.message = message;
         this.status = NotificationStatus.PENDING;
     }
+
+    public void markAsSent() {
+        this.status = NotificationStatus.SENT;
+        this.sentAt = Instant.now();
+    }
+
+    public void markAsFailed() {
+        this.status = NotificationStatus.FAILED;
+        this.sentAt = null;
+    }
 }
