@@ -3,6 +3,7 @@ package com.fulfillx.notification_service.service.impl;
 import com.fulfillx.notification_service.domain.model.Notification;
 import com.fulfillx.notification_service.events.NotificationEvent;
 import com.fulfillx.notification_service.events.NotificationEventType;
+import com.fulfillx.notification_service.exception.DuplicateNotificationEventException;
 import com.fulfillx.notification_service.exception.InvalidNotificationEventException;
 import com.fulfillx.notification_service.repository.NotificationRepository;
 import com.fulfillx.notification_service.service.NotificationProcessingService;
@@ -23,11 +24,11 @@ public class NotificationProcessingServiceImpl implements NotificationProcessing
         || notificationEvent.eventType() == null
         || notificationEvent.customerId() == null
         || notificationEvent.orderId() == null) {
-            throw new IllegalArgumentException("Notification event is missing required fields");
+            throw new InvalidNotificationEventException("Notification event is missing required fields");
         }
 
         if (notificationRepository.existsByEventId(notificationEvent.eventId())) {
-            throw new InvalidNotificationEventException("Notification event already exists");
+            throw new DuplicateNotificationEventException("Notification event already exists");
         }
 
         String subject = getSubject(notificationEvent.eventType());
