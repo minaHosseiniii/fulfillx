@@ -1,7 +1,16 @@
 package com.fulfillx.notification_service.events;
 
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.util.UUID;
+
 public record NotificationEvent(
-        String event,
-        String message
+        UUID eventId,
+        NotificationEventType eventType,
+        Instant occurredAt,
+        Long orderId,
+        Long customerId,
+        BigDecimal totalAmount,
+        String currency
 ) {
 }

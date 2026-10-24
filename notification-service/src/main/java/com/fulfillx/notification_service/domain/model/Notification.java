@@ -36,4 +36,19 @@ public class Notification {
     private Instant createdAt;
     @Column(name = "sent_at")
     private Instant sentAt;
+
+    public Notification(
+            UUID eventId,
+            String recipient,
+            String channel,
+            String subject,
+            String message
+    ) {
+        this.eventId = eventId;
+        this.recipient = recipient;
+        this.channel = channel;
+        this.subject = subject;
+        this.message = message;
+        this.status = NotificationStatus.PENDING;
+    }
 }
