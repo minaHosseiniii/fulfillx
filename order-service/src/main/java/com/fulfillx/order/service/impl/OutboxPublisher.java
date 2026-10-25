@@ -1,15 +1,14 @@
+
 package com.fulfillx.order.service.impl;
 
 import com.fulfillx.order.domain.model.OutboxEvent;
-import com.fulfillx.order.repository.OutboxEventRepository;
+import com.fulfillx.order.service.OutboxEventService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -19,7 +18,7 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class OutboxPublisher {
 
-    private final OutboxEventRepository outboxEventRepository;
+    private final OutboxEventService outboxEventService;
     private final KafkaTemplate<String, String> kafkaTemplate;
 
     @Value("${fulfillx.kafka.topics.notification-events:notification-events}")
@@ -27,7 +26,7 @@ public class OutboxPublisher {
 
     @Scheduled(fixedDelayString = "${fulfillx.outbox.poll-interval-ms:1000}")
     public void publishPendingEvents() {
-        List<OutboxEvent> events = findPendingEvents();
+        List<OutboxEvent> events = outboxEventService.findPendingEvents();
 
         for (OutboxEvent event : events) {
             try {
@@ -37,7 +36,7 @@ public class OutboxPublisher {
                         event.getPayload()
                 ).get(5, TimeUnit.SECONDS);
 
-                markPublished(event);
+                outboxEventService.markPublished(event.getId());
 
                 log.info(
                         "Published outbox event id={}, type={}, aggregateId={}",
@@ -47,7 +46,22 @@ public class OutboxPublisher {
                 );
 
             } catch (Exception exception) {
-                recordFailure(event, exception);
+                String errorMessage = exception.getMessage() != null
+                        ? exception.getMessage()
+                        : exception.getClass().getSimpleName();
+
+                try {
+                    outboxEventService.recordFailure(
+                            event.getId(),
+                            errorMessage
+                    );
+                } catch (Exception persistenceException) {
+                    log.error(
+                            "Could not record failure for outbox event id={}",
+                            event.getId(),
+                            persistenceException
+                    );
+                }
 
                 log.error(
                         "Failed to publish outbox event id={}",
@@ -56,35 +70,5 @@ public class OutboxPublisher {
                 );
             }
         }
-    }
-
-    @Transactional(readOnly = true)
-    public List<OutboxEvent> findPendingEvents() {
-        return outboxEventRepository
-                .findByPublishedAtIsNullOrderByCreatedAtAsc(
-                        PageRequest.of(0, 50)
-                );
-    }
-
-    @Transactional
-    public void markPublished(OutboxEvent event) {
-        event.markPublished();
-        outboxEventRepository.save(event);
-    }
-
-    @Transactional
-    public void recordFailure(
-            OutboxEvent event,
-            Exception exception
-    ) {
-        String message = exception.getMessage();
-
-        event.recordFailure(
-                message == null
-                        ? exception.getClass().getSimpleName()
-                        : message
-        );
-
-        outboxEventRepository.save(event);
     }
 }
