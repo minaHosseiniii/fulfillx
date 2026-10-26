@@ -5,6 +5,7 @@ import lombok.Getter;
 @Getter
 public enum NotificationStatus {
     PENDING,
+    PROCESSING,
     SENT,
     FAILED
 }

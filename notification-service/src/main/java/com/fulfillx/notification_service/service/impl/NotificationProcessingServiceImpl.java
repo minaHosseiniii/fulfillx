@@ -3,68 +3,84 @@ package com.fulfillx.notification_service.service.impl;
 import com.fulfillx.notification_service.client.CustomerServiceClient;
 import com.fulfillx.notification_service.client.dto.CustomerServiceResponse;
 import com.fulfillx.notification_service.domain.model.Notification;
-import com.fulfillx.notification_service.domain.model.NotificationStatus;
 import com.fulfillx.notification_service.events.NotificationEvent;
 import com.fulfillx.notification_service.events.NotificationEventType;
 import com.fulfillx.notification_service.exception.InvalidNotificationEventException;
 import com.fulfillx.notification_service.repository.NotificationRepository;
+import com.fulfillx.notification_service.service.NotificationClaimService;
 import com.fulfillx.notification_service.service.NotificationDeliveryService;
 import com.fulfillx.notification_service.service.NotificationProcessingService;
+import com.fulfillx.notification_service.service.NotificationResultService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+import java.util.UUID;
+
 @Service
 @RequiredArgsConstructor
-public class NotificationProcessingServiceImpl
-        implements NotificationProcessingService {
-
+public class NotificationProcessingServiceImpl implements NotificationProcessingService {
     private final NotificationRepository notificationRepository;
     private final CustomerServiceClient customerServiceClient;
     private final NotificationDeliveryService notificationDeliveryService;
+    private final NotificationResultService notificationResultService;
+    private final NotificationClaimService notificationClaimService;
+
 
     @Override
     public void process(NotificationEvent event) {
         validateEvent(event);
+        ensureNotificationExists(event);
 
-        var existingNotification =
-                notificationRepository.findByEventId(event.eventId());
+        Optional<Notification> claimedNotification =
+                notificationClaimService.claimNotification(event.eventId());
 
-        if (existingNotification.isPresent()) {
-            Notification notification = existingNotification.get();
-
-            if (notification.getStatus() == NotificationStatus.SENT) {
-                return;
-            }
-
-            notificationDeliveryService.deliverNotification(notification);
+        if (claimedNotification.isEmpty()) {
             return;
         }
 
-        CustomerServiceResponse customer =
-                customerServiceClient.getCustomerById(event.customerId());
+        Notification claimed = claimedNotification.get();
+        UUID processingToken = claimed.getProcessingToken();
 
-        if (customer == null ||
-                customer.email() == null ||
-                customer.email().isBlank()) {
-            throw new IllegalStateException(
-                    "Customer email is missing for customer ID: "
-                            + event.customerId()
+        try {
+            notificationDeliveryService.deliverNotification(claimed);
+        } catch (RuntimeException e) {
+            String error = e.getMessage();
+
+            if (error == null || error.isBlank()) {
+                error = e.getClass().getSimpleName();
+            }
+
+            boolean recorded = notificationResultService.markFailed(
+                    event.eventId(),
+                    processingToken,
+                    error
             );
+
+            if (!recorded) {
+                throw new IllegalStateException(
+                        "Notification failed, but its failure could not "
+                                + "be recorded because the processing token "
+                                + "is no longer valid: " + event.eventId(), e
+                );
+            }
+            return;
         }
 
-        Notification notification = new Notification(
+        boolean recorded = notificationResultService.markSent(
                 event.eventId(),
-                customer.email(),
-                "EMAIL",
-                getSubject(event.eventType()),
-                buildMessage(event)
+                processingToken
         );
 
-        Notification savedNotification =
-                notificationRepository.save(notification);
-
-        notificationDeliveryService.deliverNotification(savedNotification);
+        if (!recorded) {
+            throw new IllegalStateException(
+                    "Email delivery completed, but SENT status could not "
+                            + "be recorded because the processing token "
+                            + "is no longer valid: " + event.eventId()
+            );
+        }
     }
+
 
     private void validateEvent(NotificationEvent event) {
         if (event == null
@@ -117,5 +133,23 @@ public class NotificationProcessingServiceImpl
             case ORDER_DELIVERED -> "Your order has been delivered";
             case ORDER_CANCELLED -> "Your order has been cancelled";
         };
+    }
+
+    private void ensureNotificationExists(NotificationEvent event) {
+        if (notificationRepository.existsByEventId(event.eventId())) {
+            return;
+        }
+
+        CustomerServiceResponse customer = customerServiceClient.getCustomerById(event.customerId());
+        if (customer == null || customer.email() == null || customer.email().isBlank()) {
+            throw new IllegalStateException("Customer email is missing for customer ID: " + event.customerId());
+        }
+
+        notificationRepository.insertIfAbsent(
+                event.eventId(),
+                customer.email(),
+                "EMAIL",
+                getSubject(event.eventType()),
+                buildMessage(event));
     }
 }

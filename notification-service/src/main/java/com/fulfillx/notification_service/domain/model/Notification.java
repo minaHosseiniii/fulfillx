@@ -36,6 +36,15 @@ public class Notification {
     private Instant createdAt;
     @Column(name = "sent_at")
     private Instant sentAt;
+    @Column(name = "attempts", nullable = false)
+    private int attempts = 0;
+
+    @Column(name = "last_error", columnDefinition = "TEXT")
+    private String lastError;
+    @Column(name = "lease_until")
+    private Instant leaseUntil;
+    @Column(name = "processing_token")
+    private UUID processingToken;
 
     public Notification(
             UUID eventId,
@@ -52,13 +61,21 @@ public class Notification {
         this.status = NotificationStatus.PENDING;
     }
 
+
+    public void recordFailure(String error) {
+        this.lastError = error;
+        this.status = NotificationStatus.FAILED;
+        this.sentAt = null;
+        this.leaseUntil = null;
+        this.processingToken = null;
+
+    }
+
     public void markAsSent() {
         this.status = NotificationStatus.SENT;
         this.sentAt = Instant.now();
-    }
-
-    public void markAsFailed() {
-        this.status = NotificationStatus.FAILED;
-        this.sentAt = null;
+        this.lastError = null;
+        this.leaseUntil = null;
+        this.processingToken = null;
     }
 }
