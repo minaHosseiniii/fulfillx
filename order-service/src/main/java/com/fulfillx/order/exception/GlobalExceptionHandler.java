@@ -1,6 +1,7 @@
 package com.fulfillx.order.exception;
 
 import com.fulfillx.order.domain.dto.ApiErrorResponse;
+import feign.FeignException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -53,5 +54,27 @@ public class GlobalExceptionHandler {
         );
 
         return new ResponseEntity<>(response, HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(FeignException.NotFound.class)
+    public ResponseEntity<ApiErrorResponse> handleFeignNotFoundException(FeignException.NotFound exception) {
+        ApiErrorResponse response = new ApiErrorResponse(
+                HttpStatus.NOT_FOUND.value(),
+                "Customer or Product not found",
+                Instant.now(),
+                null
+        );
+        return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(FeignException.class)
+    public ResponseEntity<ApiErrorResponse> handleFeignException(FeignException exception) {
+        ApiErrorResponse response = new ApiErrorResponse(
+                HttpStatus.BAD_GATEWAY.value(),
+                "A downstream service request failed",
+                Instant.now(),
+                null
+        );
+        return new ResponseEntity<>(response, HttpStatus.BAD_GATEWAY);
     }
 }
