@@ -16,6 +16,7 @@ public interface OrderMapper {
     @Mapping(source = "unitPriceSnapshot.amount", target = "unitPrice")
     @Mapping(source = "unitPriceSnapshot.currency", target = "currency")
     @Mapping(source = "productNameSnapshot", target = "productName")
+    @Mapping(source = "productSkuSnapshot", target = "productSku")
     OrderItemResponse toOrderItemResponse(OrderItem orderItem);
 
     MoneyResponse toMoneyResponse(Money money);

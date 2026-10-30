@@ -20,6 +20,8 @@ public class OrderItem {
 
     @Column(nullable = false)
     private String productNameSnapshot;
+    @Column(nullable = false)
+    private String productSkuSnapshot;
 
     @Embedded
     @AttributeOverrides({
@@ -60,6 +62,7 @@ public class OrderItem {
     public OrderItem(
             Long productId,
             String productNameSnapshot,
+            String productSkuSnapshot,
             Money unitPriceSnapshot,
             Integer quantity
     ) {
@@ -71,6 +74,10 @@ public class OrderItem {
             throw new IllegalArgumentException("Product name cannot be null or empty");
         }
 
+        if (productSkuSnapshot == null || productSkuSnapshot.isBlank()) {
+            throw new IllegalArgumentException("Product sku cannot be null or empty");
+        }
+
         if (unitPriceSnapshot == null) {
             throw new IllegalArgumentException("Unit price cannot be null");
         }
@@ -80,6 +87,7 @@ public class OrderItem {
         this.productId = productId;
         this.productNameSnapshot = productNameSnapshot;
         this.unitPriceSnapshot = unitPriceSnapshot;
+        this.productSkuSnapshot = productSkuSnapshot;
         this.quantity = quantity;
         this.subTotal = calculateSubTotal();
     }

@@ -31,8 +31,8 @@ public class OrderRepositoryIntegrationTest {
         );
 
         Order order = new Order(1l, shippingAddress, "IRR");
-        OrderItem item1 = new OrderItem(100l, "lipstick", new Money(new BigDecimal("1000"), "IRR"), 1);
-        OrderItem item2 = new OrderItem(200l, "mascara", new Money(new BigDecimal("1000"), "IRR"), 1);
+        OrderItem item1 = new OrderItem(100l, "lipstick", "LipStick-sku",new Money(new BigDecimal("1000"), "IRR"), 1);
+        OrderItem item2 = new OrderItem(200l, "mascara", "Mascara-sku",new Money(new BigDecimal("1000"), "IRR"), 1);
         order.addItem(item1);
         order.addItem(item2);
         Order savedOrder = orderRepository.save(order);

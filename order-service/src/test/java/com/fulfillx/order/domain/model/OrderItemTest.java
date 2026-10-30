@@ -14,6 +14,7 @@ public class OrderItemTest {
         OrderItem item = new OrderItem(
                 100l,
                 "Lipstick",
+                "LipStick-sku",
                 new Money(new BigDecimal("1000"), "IRR"),
                 3
         );
@@ -26,6 +27,7 @@ public class OrderItemTest {
         OrderItem item = new OrderItem(
                 100l,
                 "Lipstick",
+                "LipStick-sku",
                 new Money(new BigDecimal("1000"), "IRR"),
                 3
         );
@@ -42,6 +44,7 @@ public class OrderItemTest {
                 new OrderItem(
                         100l,
                         "Lipstick",
+                        "LipStick-sku",
                         new Money(new BigDecimal("1000"), "IRR"),
                         0
                 ))

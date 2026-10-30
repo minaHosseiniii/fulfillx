@@ -59,9 +59,10 @@ public class OrderServiceImpl implements OrderService {
             OrderItem item = new OrderItem(
                     product.id(),
                     product.name(),
+                    product.sku(),
                     new Money(
                             product.price(),
-                            orderRequest.currency()
+                            product.currency()
                     ),
                     itemRequest.quantity()
             );
