@@ -60,7 +60,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiErrorResponse> handleFeignNotFoundException(FeignException.NotFound exception) {
         ApiErrorResponse response = new ApiErrorResponse(
                 HttpStatus.NOT_FOUND.value(),
-                "Customer or Product not found",
+                "Requested resource was not found",
                 Instant.now(),
                 null
         );
