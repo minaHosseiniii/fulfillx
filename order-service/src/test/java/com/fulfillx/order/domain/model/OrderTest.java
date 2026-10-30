@@ -31,12 +31,14 @@ public class OrderTest {
         order.addItem(new OrderItem(
                 100l,
                 "Lipstick",
+                "Lipstick-sku",
                 new Money(new BigDecimal("1000"), "IRR"),
                 1
         ));
         order.addItem(new OrderItem(
                 200l,
                 "masckara",
+                "Mascara-sku",
                 new Money(new BigDecimal("2000"), "IRR"),
                 1
         ));
@@ -56,6 +58,7 @@ public class OrderTest {
         OrderItem item = new OrderItem(
                 100l,
                 "Lipstick",
+                "Lipstick-sku",
                 new Money(new BigDecimal("1000"), "IRR"),
                 1
         );
@@ -63,6 +66,7 @@ public class OrderTest {
         OrderItem item2 = new OrderItem(
                 200l,
                 "masckara",
+                "Mascara-sku",
                 new Money(new BigDecimal("2000"), "IRR"),
                 1
         );
@@ -89,6 +93,7 @@ public class OrderTest {
         OrderItem item = new OrderItem(
                 100L,
                 "Lipstick",
+                "Lipstick-sku",
                 new Money(new BigDecimal("10"), "USD"),
                 1
         );
