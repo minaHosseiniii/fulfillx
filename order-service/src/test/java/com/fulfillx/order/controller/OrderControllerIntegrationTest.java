@@ -44,14 +44,10 @@ public class OrderControllerIntegrationTest {
                 List.of(
                         new CreateOrderItemRequest(
                                 100L,
-                                "Lipstick",
-                                new BigDecimal("500000"),
                                 2
                         ),
                         new CreateOrderItemRequest(
                                 200L,
-                                "Foundation",
-                                new BigDecimal("300000"),
                                 1
                         )
                 )
@@ -126,8 +122,6 @@ public class OrderControllerIntegrationTest {
                 List.of(
                         new CreateOrderItemRequest(
                                 100L,
-                                "Lipstick",
-                                new BigDecimal("500000"),
                                 0
                         )
                 )
