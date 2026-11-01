@@ -2,8 +2,10 @@ package com.fulfillx.order.service.impl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fulfillx.order.client.InventoryClient;
 import com.fulfillx.order.client.dto.CustomerResponse;
 import com.fulfillx.order.client.dto.ProductResponse;
+import com.fulfillx.order.client.dto.StockOperationRequest;
 import com.fulfillx.order.domain.dto.CreateOrderItemRequest;
 import com.fulfillx.order.domain.dto.CreateOrderRequest;
 import com.fulfillx.order.domain.dto.OrderResponse;
@@ -22,6 +24,8 @@ import org.springframework.transaction.annotation.Transactional;
 import com.fulfillx.order.client.CatalogClient;
 import com.fulfillx.order.client.CustomerClient;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -34,6 +38,7 @@ public class OrderServiceImpl implements OrderService {
     private final ObjectMapper objectMapper;
     private final CatalogClient catalogClient;
     private final CustomerClient customerClient;
+    private final InventoryClient inventoryClient;
 
     @Override
     public OrderResponse createOrder(CreateOrderRequest orderRequest) {
@@ -68,6 +73,8 @@ public class OrderServiceImpl implements OrderService {
             );
             order.addItem(item);
         }
+        
+        reserveOrderItems(order);
 
         Order savedOrder = orderRepository.save(order);
 
@@ -98,5 +105,42 @@ public class OrderServiceImpl implements OrderService {
         }
 
         return orderMapper.toOrderResponse(savedOrder);
+    }
+
+    private void reserveOrderItems(Order order) {
+        List<OrderItem> reservedItems = new ArrayList<>();
+
+        try {
+            for (OrderItem item : order.getItems()) {
+
+                StockOperationRequest request =
+                        new StockOperationRequest(item.getQuantity());
+
+                inventoryClient.reserveStock(
+                        item.getProductId(),
+                        request
+                );
+
+                reservedItems.add(item);
+            }
+
+        } catch (Exception exception) {
+
+            for (OrderItem reservedItem : reservedItems) {
+                try {
+                    inventoryClient.releaseStock(
+                            reservedItem.getProductId(),
+                            new StockOperationRequest(reservedItem.getQuantity())
+                    );
+                } catch (Exception compensationException) {
+                    exception.addSuppressed(compensationException);
+                }
+            }
+
+            throw new IllegalStateException(
+                    "Could not reserve inventory for order",
+                    exception
+            );
+        }
     }
 }

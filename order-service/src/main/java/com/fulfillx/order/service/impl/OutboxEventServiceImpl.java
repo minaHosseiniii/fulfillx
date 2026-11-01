@@ -32,7 +32,7 @@ public class OutboxEventServiceImpl implements OutboxEventService {
     public void markPublished(UUID eventId) {
         OutboxEvent event = outboxEventRepository.findById(eventId)
                 .orElseThrow(() -> new IllegalStateException(
-                        "Outbox event not found: " + eventId
+                        "Outbox events not found: " + eventId
                 ));
 
         event.markPublished();
@@ -44,7 +44,7 @@ public class OutboxEventServiceImpl implements OutboxEventService {
     public void recordFailure(UUID eventId, String error) {
         OutboxEvent event = outboxEventRepository.findById(eventId)
                 .orElseThrow(() -> new IllegalStateException(
-                        "Outbox event not found: " + eventId
+                        "Outbox events not found: " + eventId
                 ));
 
         event.recordFailure(error);

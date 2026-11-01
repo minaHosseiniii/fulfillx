@@ -39,7 +39,7 @@ public class OutboxPublisher {
                 outboxEventService.markPublished(event.getId());
 
                 log.info(
-                        "Published outbox event id={}, type={}, aggregateId={}",
+                        "Published outbox events id={}, type={}, aggregateId={}",
                         event.getId(),
                         event.getEventType(),
                         event.getAggregateId()
@@ -57,14 +57,14 @@ public class OutboxPublisher {
                     );
                 } catch (Exception persistenceException) {
                     log.error(
-                            "Could not record failure for outbox event id={}",
+                            "Could not record failure for outbox events id={}",
                             event.getId(),
                             persistenceException
                     );
                 }
 
                 log.error(
-                        "Failed to publish outbox event id={}",
+                        "Failed to publish outbox events id={}",
                         event.getId(),
                         exception
                 );

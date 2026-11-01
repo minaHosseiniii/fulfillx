@@ -90,7 +90,7 @@ public class NotificationProcessingServiceImpl implements NotificationProcessing
                 || event.orderId() == null) {
 
             throw new InvalidNotificationEventException(
-                    "Notification event is missing required fields"
+                    "Notification events is missing required fields"
             );
         }
     }

@@ -16,6 +16,17 @@ spring:
   flyway:
     enabled: true
 
+  spring:
+    kafka:
+      consumer:
+        group-id: inventory-service
+        key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+        value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+        properties:
+          spring.json.trusted.packages: com.fulfillx.inventory_service.messaging.event
+          spring.json.value.default.type: com.fulfillx.inventory_service.messaging.event.ReserveInventoryCommand
+          spring.json.use.type.headers: false
+
 eureka:
   client:
     service-url:

@@ -180,6 +180,24 @@ public class Order extends BaseEntity {
         this.orderStatus = OrderStatus.DELIVERED;
     }
 
+    public void markInventoryReservationFailed() {
+        requireStatus(OrderStatus.INVENTORY_RESERVATION_PENDING);
+        this.orderStatus = OrderStatus.INVENTORY_RESERVATION_FAILED;
+    }
+
+    public void startCancellation() {
+        if (orderStatus == OrderStatus.DELIVERED ||
+        orderStatus == OrderStatus.CANCELLED) {
+            throw new IllegalStateException("Delivered or cancelled order cannot enter cancellation");
+        }
+        this.orderStatus = OrderStatus.CANCELLATION_PENDING;
+    }
+
+    public void completeCancellation() {
+        requireStatus(OrderStatus.CANCELLATION_PENDING);
+        this.orderStatus = OrderStatus.CANCELLED;
+    }
+
     public void cancel() {
         if (orderStatus == OrderStatus.DELIVERED) {
             throw new IllegalStateException(

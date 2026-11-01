@@ -7,6 +7,8 @@ import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 public interface InventoryRepository extends JpaRepository<InventoryItem, Long> {
@@ -20,4 +22,15 @@ public interface InventoryRepository extends JpaRepository<InventoryItem, Long> 
         where i.productId = :productId
 """)
     Optional<InventoryItem> findByProductIdForUpdate(@Param("productId") Long productId);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("""
+    SELECT i
+    FROM InventoryItem i
+    WHERE i.productId IN :productIds
+    ORDER BY i.productId
+    """)
+    List<InventoryItem> findAllByProductIdsForUpdate(
+            @Param("productIds") Collection<Long> productIds
+    );
 }
