@@ -3,6 +3,8 @@ package com.fulfillx.inventory_service.events.messaging.consumer;
 
 import com.fulfillx.inventory_service.events.messaging.InventoryReservationResultEvent;
 import com.fulfillx.inventory_service.events.messaging.ReserveInventoryCommand;
+import com.fulfillx.inventory_service.exception.InsufficientStockException;
+import com.fulfillx.inventory_service.exception.InventoryNotFoundException;
 import com.fulfillx.inventory_service.service.InventoryReservationEventService;
 import com.fulfillx.inventory_service.service.InventoryService;
 import com.fulfillx.inventory_service.dto.ReserveInventoryRequest;
@@ -42,7 +44,7 @@ public class InventoryReservationConsumer {
 
             inventoryService.reserveOrder(request);
 
-        } catch (Exception exception) {
+        } catch (InsufficientStockException | InventoryNotFoundException exception) {
 
             InventoryReservationResultEvent failureEvent =
                     new InventoryReservationResultEvent(

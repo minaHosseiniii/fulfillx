@@ -11,6 +11,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
+import java.util.UUID;
+
 @Service
 @RequiredArgsConstructor
 public class InventoryReservationEventServiceImpl implements InventoryReservationEventService {
@@ -28,6 +31,7 @@ public class InventoryReservationEventServiceImpl implements InventoryReservatio
                     event.eventId(),
                     "INVENTORY_RESERVATION",
                     event.orderId(),
+                    event.sagaId(),
                     "INVENTORY_RESERVATION_RESULT",
                     payload
             );
@@ -50,6 +54,7 @@ public class InventoryReservationEventServiceImpl implements InventoryReservatio
                     event.eventId(),
                     "INVENTORY_RESERVATION",
                     event.orderId(),
+                    event.sagaId(),
                     "INVENTORY_RESERVATION_RESULT",
                     payload
             );
@@ -60,5 +65,35 @@ public class InventoryReservationEventServiceImpl implements InventoryReservatio
             throw new IllegalStateException(
                     "Could not serialize inventory reservation result", e);
         }
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.MANDATORY)
+    public void ensureSuccessResultExists(UUID sagaId, Long orderId) {
+
+        boolean exists =
+                outboxEventRepository
+                        .findByAggregateTypeAndSagaIdAndEventType(
+                                "INVENTORY_RESERVATION",
+                                sagaId,
+                                "INVENTORY_RESERVATION_RESULT"
+                        )
+                        .isPresent();
+
+        if (exists) {
+            return;
+        }
+
+        InventoryReservationResultEvent event =
+                new InventoryReservationResultEvent(
+                        UUID.randomUUID(),
+                        sagaId,
+                        orderId,
+                        Instant.now(),
+                        true,
+                        null
+                );
+
+        saveResult(event);
     }
 }

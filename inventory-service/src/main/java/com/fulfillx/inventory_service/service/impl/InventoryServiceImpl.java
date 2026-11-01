@@ -2,6 +2,7 @@ package com.fulfillx.inventory_service.service.impl;
 
 import com.fulfillx.inventory_service.domain.model.InventoryItem;
 import com.fulfillx.inventory_service.domain.model.InventoryReservation;
+import com.fulfillx.inventory_service.domain.model.OutboxEvent;
 import com.fulfillx.inventory_service.domain.model.ReservationStatus;
 import com.fulfillx.inventory_service.dto.InventoryRequest;
 import com.fulfillx.inventory_service.dto.InventoryResponse;
@@ -14,6 +15,7 @@ import com.fulfillx.inventory_service.exception.InventoryNotFoundException;
 import com.fulfillx.inventory_service.mapper.InventoryMapper;
 import com.fulfillx.inventory_service.repository.InventoryRepository;
 import com.fulfillx.inventory_service.repository.InventoryReservationRepository;
+import com.fulfillx.inventory_service.repository.OutboxEventRepository;
 import com.fulfillx.inventory_service.service.InventoryReservationEventService;
 import com.fulfillx.inventory_service.service.InventoryService;
 import lombok.RequiredArgsConstructor;
@@ -21,10 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -36,6 +35,7 @@ public class InventoryServiceImpl implements InventoryService {
     private final InventoryMapper inventoryMapper;
     private final InventoryReservationRepository reservationRepository;
     private final InventoryReservationEventService reservationEventService;
+    private final OutboxEventRepository outboxEventRepository;
 
     @Override
     public InventoryResponse initializeStock(InventoryRequest inventoryRequest) {
@@ -87,19 +87,32 @@ public class InventoryServiceImpl implements InventoryService {
     @Transactional
     public void reserveOrder(ReserveInventoryRequest request) {
 
+        // 1. Validate request
+        if (request == null ||
+                request.sagaId() == null ||
+                request.orderId() == null) {
+
+            throw new IllegalArgumentException(
+                    "Invalid reservation request"
+            );
+        }
+
         if (request.items() == null || request.items().isEmpty()) {
             throw new IllegalArgumentException(
                     "Order must contain at least one item"
             );
         }
 
-        // 1. بررسی تکراری نبودن محصول در اقلام سفارش
+        // 2. Aggregate duplicate product items
         Map<Long, Integer> quantities = new HashMap<>();
 
         for (ReservationItemRequest item : request.items()) {
-            if (item.productId() == null ||
+
+            if (item == null ||
+                    item.productId() == null ||
                     item.quantity() == null ||
                     item.quantity() <= 0) {
+
                 throw new IllegalArgumentException(
                         "Invalid reservation item"
                 );
@@ -112,7 +125,7 @@ public class InventoryServiceImpl implements InventoryService {
             );
         }
 
-        // 2. بررسی Idempotency
+        // 3. Check previous reservations
         boolean alreadyReserved =
                 reservationRepository.existsByOrderIdAndSagaId(
                         request.orderId(),
@@ -120,6 +133,7 @@ public class InventoryServiceImpl implements InventoryService {
                 );
 
         if (alreadyReserved) {
+
             List<InventoryReservation> reservations =
                     reservationRepository.findAllByOrderIdAndSagaId(
                             request.orderId(),
@@ -127,10 +141,22 @@ public class InventoryServiceImpl implements InventoryService {
                     );
 
             validateExistingReservations(reservations, quantities);
+        }
+
+        // 4. Check previous result event
+        Optional<OutboxEvent> previousResult =
+                outboxEventRepository
+                        .findByAggregateTypeAndSagaIdAndEventType(
+                                "INVENTORY_RESERVATION",
+                                request.sagaId(),
+                                "INVENTORY_RESERVATION_RESULT"
+                        );
+
+        if (previousResult.isPresent()) {
             return;
         }
 
-        // 3. قفل کردن موجودی تمام محصولات
+        // 5. Lock inventory records
         List<Long> productIds = quantities.keySet()
                 .stream()
                 .sorted()
@@ -140,19 +166,21 @@ public class InventoryServiceImpl implements InventoryService {
                 inventoryRepository.findAllByProductIdsForUpdate(productIds);
 
         if (inventoryItems.size() != productIds.size()) {
-            throw new IllegalArgumentException(
+            throw new InventoryNotFoundException(
                     "Inventory not found for one or more products"
             );
         }
 
-        Map<Long, InventoryItem> inventoryMap = inventoryItems.stream()
-                .collect(Collectors.toMap(
-                        InventoryItem::getProductId,
-                        Function.identity()
-                ));
+        Map<Long, InventoryItem> inventoryMap =
+                inventoryItems.stream()
+                        .collect(Collectors.toMap(
+                                InventoryItem::getProductId,
+                                Function.identity()
+                        ));
 
-        // 4. بررسی موجودی تمام محصولات
+        // 6. Validate available quantities
         for (Map.Entry<Long, Integer> entry : quantities.entrySet()) {
+
             InventoryItem inventory = inventoryMap.get(entry.getKey());
 
             if (inventory.getAvailableQuantity() < entry.getValue()) {
@@ -162,8 +190,9 @@ public class InventoryServiceImpl implements InventoryService {
             }
         }
 
-        // 5. رزرو موجودی و ایجاد Reservation
+        // 7. Reserve inventory and create reservations
         for (Map.Entry<Long, Integer> entry : quantities.entrySet()) {
+
             Long productId = entry.getKey();
             Integer quantity = entry.getValue();
 
@@ -182,14 +211,17 @@ public class InventoryServiceImpl implements InventoryService {
             reservationRepository.save(reservation);
         }
 
-        InventoryReservationResultEvent resultEvent = new InventoryReservationResultEvent(
-                UUID.randomUUID(),
-                request.sagaId(),
-                request.orderId(),
-                Instant.now(),
-                true,
-                null
-        );
+        // 8. Save successful result event in the same transaction
+        InventoryReservationResultEvent resultEvent =
+                new InventoryReservationResultEvent(
+                        UUID.randomUUID(),
+                        request.sagaId(),
+                        request.orderId(),
+                        Instant.now(),
+                        true,
+                        null
+                );
+
         reservationEventService.saveResult(resultEvent);
     }
 

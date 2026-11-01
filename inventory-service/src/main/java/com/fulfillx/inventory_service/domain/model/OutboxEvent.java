@@ -23,6 +23,9 @@ public class OutboxEvent {
     @Column(nullable = false)
     private Long aggregateId;
 
+    @Column(name = "saga_id")
+    private UUID sagaId;
+
     @Column(nullable = false)
     private String eventType;
 
@@ -42,12 +45,14 @@ public class OutboxEvent {
             UUID id,
             String aggregateType,
             Long aggregateId,
+            َUUID sagaId,
             String eventType,
             String payload
     ) {
         this.id = id;
         this.aggregateType = aggregateType;
         this.aggregateId = aggregateId;
+        this.sagaId = sagaId;
         this.eventType = eventType;
         this.payload = payload;
         this.status = OutboxStatus.PENDING;
