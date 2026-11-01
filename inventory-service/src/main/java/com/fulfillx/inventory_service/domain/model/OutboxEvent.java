@@ -23,6 +23,7 @@ public class OutboxEvent {
     @Column(nullable = false)
     private Long aggregateId;
 
+
     @Column(name = "saga_id")
     private UUID sagaId;
 
@@ -45,7 +46,7 @@ public class OutboxEvent {
             UUID id,
             String aggregateType,
             Long aggregateId,
-            َUUID sagaId,
+            UUID sagaId,
             String eventType,
             String payload
     ) {
