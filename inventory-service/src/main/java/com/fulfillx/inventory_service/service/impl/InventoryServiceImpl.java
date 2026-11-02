@@ -146,7 +146,8 @@ public class InventoryServiceImpl implements InventoryService {
         // 4. Check previous result event
         Optional<OutboxEvent> previousResult =
                 outboxEventRepository
-                        .findByAggregateTypeAndSagaIdAndEventType(
+                        .findByAggregateIdAndAggregateTypeAndSagaIdAndEventType(
+                                request.orderId(),
                                 "INVENTORY_RESERVATION",
                                 request.sagaId(),
                                 "INVENTORY_RESERVATION_RESULT"

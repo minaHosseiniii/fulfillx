@@ -24,6 +24,15 @@ spring:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
 
+    consumer:
+      group-id: order-service
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: com.fulfillx.order.events.messaging
+        spring.json.value.default.type: com.fulfillx.order.events.messaging.InventoryReservationResultEvent
+        spring.json.use.type.headers: false
+
 eureka:
   client:
     service-url:

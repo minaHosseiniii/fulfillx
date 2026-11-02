@@ -2,10 +2,10 @@ package com.fulfillx.order.service.impl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fulfillx.order.client.InventoryClient;
+import com.fulfillx.order.client.CatalogClient;
+import com.fulfillx.order.client.CustomerClient;
 import com.fulfillx.order.client.dto.CustomerResponse;
 import com.fulfillx.order.client.dto.ProductResponse;
-import com.fulfillx.order.client.dto.StockOperationRequest;
 import com.fulfillx.order.domain.dto.CreateOrderItemRequest;
 import com.fulfillx.order.domain.dto.CreateOrderRequest;
 import com.fulfillx.order.domain.dto.OrderResponse;
@@ -13,7 +13,11 @@ import com.fulfillx.order.domain.model.Money;
 import com.fulfillx.order.domain.model.Order;
 import com.fulfillx.order.domain.model.OrderItem;
 import com.fulfillx.order.domain.model.OutboxEvent;
+import com.fulfillx.order.domain.model.enums.OrderStatus;
 import com.fulfillx.order.events.OrderCreatedEvent;
+import com.fulfillx.order.events.messaging.InventoryReservationResultEvent;
+import com.fulfillx.order.events.saga.InventoryReservationItem;
+import com.fulfillx.order.events.saga.ReserveInventoryCommand;
 import com.fulfillx.order.mapper.OrderMapper;
 import com.fulfillx.order.repository.OrderRepository;
 import com.fulfillx.order.repository.OutboxEventRepository;
@@ -21,11 +25,8 @@ import com.fulfillx.order.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import com.fulfillx.order.client.CatalogClient;
-import com.fulfillx.order.client.CustomerClient;
+
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -38,7 +39,6 @@ public class OrderServiceImpl implements OrderService {
     private final ObjectMapper objectMapper;
     private final CatalogClient catalogClient;
     private final CustomerClient customerClient;
-    private final InventoryClient inventoryClient;
 
     @Override
     public OrderResponse createOrder(CreateOrderRequest orderRequest) {
@@ -73,10 +73,35 @@ public class OrderServiceImpl implements OrderService {
             );
             order.addItem(item);
         }
-        
-        reserveOrderItems(order);
+
+        UUID sagaId = UUID.randomUUID();
+
+        order.startInventoryReservation(sagaId);
 
         Order savedOrder = orderRepository.save(order);
+
+        ReserveInventoryCommand command = new ReserveInventoryCommand(
+                UUID.randomUUID(),
+                sagaId,
+                savedOrder.getId(),
+                Instant.now(),
+                savedOrder.getItems().stream().map(orderItem ->
+                        new InventoryReservationItem(orderItem.getProductId(), orderItem.getQuantity())
+                ).toList()
+        );
+        try {
+            String payload = objectMapper.writeValueAsString(command);
+            OutboxEvent outboxEvent = new OutboxEvent(
+                    command.eventId(),
+                    "ORDER",
+                    command.orderId(),
+                    "RESERVE_INVENTORY",
+                    payload
+            );
+            outboxEventRepository.save(outboxEvent);
+        } catch (JsonProcessingException e) {
+            throw new IllegalStateException("Could not serialize inventory command ", e);
+        }
 
         OrderCreatedEvent orderCreatedEvent = new OrderCreatedEvent(
                 UUID.randomUUID(),
@@ -107,40 +132,24 @@ public class OrderServiceImpl implements OrderService {
         return orderMapper.toOrderResponse(savedOrder);
     }
 
-    private void reserveOrderItems(Order order) {
-        List<OrderItem> reservedItems = new ArrayList<>();
+    @Override
+    public void handleInventoryReservationResult(InventoryReservationResultEvent event) {
+        Order order = orderRepository.findById(event.orderId()).orElseThrow(() ->
+                new IllegalArgumentException("Order not found: " + event.orderId()));
 
-        try {
-            for (OrderItem item : order.getItems()) {
+        if (!event.sagaId().equals(order.getSagaId())) {
+            throw new IllegalStateException("Saga id mismatch for order: " + event.orderId());
+        }
 
-                StockOperationRequest request =
-                        new StockOperationRequest(item.getQuantity());
+        if (order.getOrderStatus() != OrderStatus.INVENTORY_RESERVATION_PENDING) {
+            return;
+        }
 
-                inventoryClient.reserveStock(
-                        item.getProductId(),
-                        request
-                );
-
-                reservedItems.add(item);
-            }
-
-        } catch (Exception exception) {
-
-            for (OrderItem reservedItem : reservedItems) {
-                try {
-                    inventoryClient.releaseStock(
-                            reservedItem.getProductId(),
-                            new StockOperationRequest(reservedItem.getQuantity())
-                    );
-                } catch (Exception compensationException) {
-                    exception.addSuppressed(compensationException);
-                }
-            }
-
-            throw new IllegalStateException(
-                    "Could not reserve inventory for order",
-                    exception
-            );
+        if (event.successful()) {
+            order.markInventoryReserved();
+        } else {
+            order.markInventoryReservationFailed();
         }
     }
+
 }

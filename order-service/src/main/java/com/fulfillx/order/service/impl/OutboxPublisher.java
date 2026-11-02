@@ -30,8 +30,9 @@ public class OutboxPublisher {
 
         for (OutboxEvent event : events) {
             try {
+                String topic = resolveTopic(event.getEventType());
                 kafkaTemplate.send(
-                        notificationEventsTopic,
+                        topic,
                         String.valueOf(event.getAggregateId()),
                         event.getPayload()
                 ).get(5, TimeUnit.SECONDS);
@@ -70,5 +71,13 @@ public class OutboxPublisher {
                 );
             }
         }
+    }
+
+    private String resolveTopic(String eventType) {
+        return switch (eventType) {
+            case "RESERVE_INVENTORY" -> "inventory-reservation-commands";
+            case "ORDER_CREATED" -> notificationEventsTopic;
+            default -> throw new IllegalStateException("Unknown outbox event type: " + eventType);
+        };
     }
 }

@@ -21,6 +21,7 @@ import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Entity
 @Table(name = "orders")
@@ -33,6 +34,9 @@ public class Order extends BaseEntity {
 
     @Column(nullable = false)
     private Long customerId;
+
+    @Column(name = "saga_id", unique = true)
+    private UUID sagaId;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -145,8 +149,12 @@ public class Order extends BaseEntity {
         }
     }
 
-    public void startInventoryReservation() {
+    public void startInventoryReservation(UUID sagaId) {
         requireStatus(OrderStatus.PENDING);
+        if (sagaId == null) {
+            throw new IllegalArgumentException("Saga ID cannot be null");
+        }
+        this.sagaId = sagaId;
         this.orderStatus = OrderStatus.INVENTORY_RESERVATION_PENDING;
     }
 

@@ -13,8 +13,8 @@ import java.util.UUID;
         name = "inventory_reservations",
         uniqueConstraints = {
                 @UniqueConstraint(
-                        name = "uk_reservation_order_product",
-                        columnNames = {"order_id", "product_id"}
+                        name = "uk_reservation_order_saga_product",
+                        columnNames = {"order_id", "saga_id", "product_id"}
                 )
         }
 )

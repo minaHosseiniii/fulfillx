@@ -73,7 +73,8 @@ public class InventoryReservationEventServiceImpl implements InventoryReservatio
 
         boolean exists =
                 outboxEventRepository
-                        .findByAggregateTypeAndSagaIdAndEventType(
+                        .findByAggregateIdAndAggregateTypeAndSagaIdAndEventType(
+                                orderId,
                                 "INVENTORY_RESERVATION",
                                 sagaId,
                                 "INVENTORY_RESERVATION_RESULT"

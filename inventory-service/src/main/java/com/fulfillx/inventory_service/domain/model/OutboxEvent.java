@@ -64,4 +64,8 @@ public class OutboxEvent {
         this.status = OutboxStatus.PUBLISHED;
         this.publishedAt = Instant.now();
     }
+
+    public void recordFailure() {
+        this.status = OutboxStatus.PENDING;
+    }
 }
