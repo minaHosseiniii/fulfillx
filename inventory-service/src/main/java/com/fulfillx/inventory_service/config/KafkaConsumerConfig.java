@@ -82,4 +82,31 @@ public class KafkaConsumerConfig {
                 .replicas(1)
                 .build();
     }
+
+    @Bean
+    public ProducerFactory<String, String> outboxProducerFactory() {
+        Map<String, Object> properties = new HashMap<>();
+
+        properties.put(
+                ProducerConfig.BOOTSTRAP_SERVERS_CONFIG,
+                bootstrapServers
+        );
+
+        properties.put(
+                ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG,
+                StringSerializer.class
+        );
+
+        properties.put(
+                ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,
+                StringSerializer.class
+        );
+
+        return new DefaultKafkaProducerFactory<>(properties);
+    }
+
+    @Bean
+    public KafkaTemplate<String, String> outboxKafkaTemplate() {
+        return new KafkaTemplate<>(outboxProducerFactory());
+    }
 }
