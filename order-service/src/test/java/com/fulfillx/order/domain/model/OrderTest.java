@@ -4,6 +4,7 @@ import com.fulfillx.order.domain.model.enums.OrderStatus;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -115,8 +116,8 @@ public class OrderTest {
 
         assertThat(order.getOrderStatus())
                 .isEqualTo(OrderStatus.PENDING);
-
-        order.startInventoryReservation();
+        UUID sagaId = UUID.randomUUID();
+        order.startInventoryReservation(sagaId);
         assertThat(order.getOrderStatus())
                 .isEqualTo(OrderStatus.INVENTORY_RESERVATION_PENDING);
 
@@ -175,7 +176,8 @@ public class OrderTest {
                 "IRR"
         );
 
-        order.startInventoryReservation();
+        UUID sagaId = UUID.randomUUID();
+        order.startInventoryReservation(sagaId);
         order.markInventoryReserved();
         order.startPayment();
         order.confirm();
