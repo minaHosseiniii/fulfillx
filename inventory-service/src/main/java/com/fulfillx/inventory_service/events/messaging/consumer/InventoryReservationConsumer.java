@@ -29,6 +29,9 @@ public class InventoryReservationConsumer {
             groupId = "inventory-service"
     )
     public void consume(ReserveInventoryCommand command) {
+        if (command.orderId().equals(999999L)) {
+            throw new RuntimeException("Simulated technical failure for DLT test");
+        }
 
         try {
             ReserveInventoryRequest request = new ReserveInventoryRequest(
