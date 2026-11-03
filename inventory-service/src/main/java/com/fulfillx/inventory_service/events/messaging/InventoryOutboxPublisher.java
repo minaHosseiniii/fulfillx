@@ -5,6 +5,7 @@ import com.fulfillx.inventory_service.domain.model.OutboxStatus;
 import com.fulfillx.inventory_service.repository.OutboxEventRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -20,6 +21,8 @@ public class InventoryOutboxPublisher {
             "inventory-reservation-results";
 
     private final OutboxEventRepository outboxRepository;
+
+    @Qualifier("outboxKafkaTemplate")
     private final KafkaTemplate<String, String> kafkaTemplate;
 
     @Scheduled(fixedDelay = 5000)
