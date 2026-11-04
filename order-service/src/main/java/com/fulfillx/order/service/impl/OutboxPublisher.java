@@ -77,6 +77,7 @@ public class OutboxPublisher {
         return switch (eventType) {
             case "RESERVE_INVENTORY" -> "inventory-reservation-commands";
             case "ORDER_CREATED" -> notificationEventsTopic;
+            case "PROCESS_PAYMENT" -> "processing-payment-commands";
             default -> throw new IllegalStateException("Unknown outbox event type: " + eventType);
         };
     }

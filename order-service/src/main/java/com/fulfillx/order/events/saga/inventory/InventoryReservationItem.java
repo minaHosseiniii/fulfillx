@@ -1,4 +1,4 @@
-package com.fulfillx.order.events.saga;
+package com.fulfillx.order.events.saga.inventory;
 
 public record InventoryReservationItem (
         Long productId,

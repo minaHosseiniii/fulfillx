@@ -16,6 +16,21 @@ spring:
   flyway:
     enabled: true
 
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+
+    consumer:
+      group-id: payment-service
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: com.fulfillx.payment_service.events.saga
+        spring.json.value.default.type: com.fulfillx.payment_service.events.saga.ProcessPaymentCommand
+        spring.json.use.type.headers: false
+
 eureka:
   client:
     service-url:

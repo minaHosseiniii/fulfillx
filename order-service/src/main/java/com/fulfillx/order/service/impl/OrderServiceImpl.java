@@ -16,8 +16,9 @@ import com.fulfillx.order.domain.model.OutboxEvent;
 import com.fulfillx.order.domain.model.enums.OrderStatus;
 import com.fulfillx.order.events.OrderCreatedEvent;
 import com.fulfillx.order.events.messaging.InventoryReservationResultEvent;
-import com.fulfillx.order.events.saga.InventoryReservationItem;
-import com.fulfillx.order.events.saga.ReserveInventoryCommand;
+import com.fulfillx.order.events.saga.inventory.InventoryReservationItem;
+import com.fulfillx.order.events.saga.inventory.ReserveInventoryCommand;
+import com.fulfillx.order.events.saga.payment.ProcessPaymentCommand;
 import com.fulfillx.order.mapper.OrderMapper;
 import com.fulfillx.order.repository.OrderRepository;
 import com.fulfillx.order.repository.OutboxEventRepository;
@@ -145,10 +146,34 @@ public class OrderServiceImpl implements OrderService {
             return;
         }
 
-        if (event.successful()) {
-            order.markInventoryReserved();
-        } else {
+        if (!event.successful()) {
             order.markInventoryReservationFailed();
+            return;
+        }
+        order.markInventoryReserved();
+        order.startPayment();
+        Money totalAmount = order.calculateTotalAmount();
+        ProcessPaymentCommand processPaymentCommand = new ProcessPaymentCommand(
+                UUID.randomUUID(),
+                UUID.randomUUID(),
+                order.getId(),
+                totalAmount.getAmount(),
+                totalAmount.getCurrency(),
+                Instant.now()
+        );
+        try {
+            String payload = objectMapper.writeValueAsString(processPaymentCommand);
+            OutboxEvent outboxEvent = new OutboxEvent(
+                    processPaymentCommand.eventId(),
+                    "ORDER",
+                    order.getId(),
+                    "PROCESS_PAYMENT",
+                    payload
+            );
+
+            outboxEventRepository.save(outboxEvent);
+        }catch (JsonProcessingException e) {
+            throw new IllegalStateException("Could not serialize processPaymentCommand", e);
         }
     }
 

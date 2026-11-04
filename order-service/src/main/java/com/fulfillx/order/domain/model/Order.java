@@ -1,20 +1,7 @@
 package com.fulfillx.order.domain.model;
 
 import com.fulfillx.order.domain.model.enums.OrderStatus;
-import jakarta.persistence.AttributeOverride;
-import jakarta.persistence.AttributeOverrides;
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Embedded;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -220,6 +207,25 @@ public class Order extends BaseEntity {
         }
 
         this.orderStatus = OrderStatus.CANCELLED;
+    }
+
+    public Money calculateTotalAmount() {
+        if (items == null || items.isEmpty()) {
+            throw new IllegalStateException("Cannot calculate total amount for an empty order");
+        }
+
+        String currency = items.get(0)
+                .getUnitPriceSnapshot()
+                .getCurrency();
+        BigDecimal totalAmount = BigDecimal.ZERO;
+        for (OrderItem item : items) {
+            Money unitPrice = item.getUnitPriceSnapshot();
+            if (!currency.equals(unitPrice.getCurrency())) {
+                throw new IllegalStateException("All order items must have the same currency");
+            }
+            totalAmount = totalAmount.add(item.getSubTotal());
+        }
+        return new Money(totalAmount, currency);
     }
 
     private void requireStatus(OrderStatus expectedStatus) {

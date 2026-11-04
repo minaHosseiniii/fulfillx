@@ -1,9 +1,9 @@
-package com.fulfillx.order.events.saga;
+package com.fulfillx.order.events.saga.inventory;
 
 import java.time.Instant;
 import java.util.UUID;
 
-public record ReleaseInventoryCommand(
+public record InventoryReservedEvent(
         UUID eventId,
         UUID sagaId,
         Long orderId,
