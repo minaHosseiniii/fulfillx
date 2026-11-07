@@ -78,7 +78,7 @@ public class OutboxPublisher {
             case "RESERVE_INVENTORY" -> "inventory-reservation-commands";
             case "RELEASE_INVENTORY" -> "inventory-release-commands";
             case "ORDER_CREATED" -> notificationEventsTopic;
-            case "PROCESS_PAYMENT" -> "payment-processing-commands";
+            case "PROCESS_PAYMENT" -> "payment-processing-command";
             default -> throw new IllegalStateException("Unknown outbox event type: " + eventType);
         };
     }
