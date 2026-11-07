@@ -1,7 +1,7 @@
 package com.fulfillx.order.events.consumer;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 import com.fulfillx.order.events.messaging.InventoryReservationResultEvent;
 import com.fulfillx.order.service.OrderService;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +20,7 @@ public class InventoryReservationResultConsumer {
             topics = "inventory-reservation-results",
             groupId = "order-service"
     )
-    public void consume(String message) throws JsonProcessingException {
+    public void consume(String message) throws JacksonException {
         InventoryReservationResultEvent event =
                 objectMapper.readValue(message, InventoryReservationResultEvent.class);
 

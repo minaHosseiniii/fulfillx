@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
+import tools.jackson.core.JacksonException;
 import tools.jackson.databind.ObjectMapper;
 
 @Component
@@ -20,7 +21,7 @@ public class PaymentProcessingResultConsumer {
             groupId = "order-service",
             topics = "payment-processing-results"
     )
-    public void consume(String message) throws Exception {
+    public void consume(String message) throws JacksonException {
 
         PaymentProcessingResultEvent event =
                 objectMapper.readValue(message, PaymentProcessingResultEvent.class);

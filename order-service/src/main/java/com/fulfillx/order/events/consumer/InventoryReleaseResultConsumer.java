@@ -1,6 +1,6 @@
 package com.fulfillx.order.events.consumer;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+import tools.jackson.core.JacksonException;
 import tools.jackson.databind.ObjectMapper;
 import com.fulfillx.order.events.saga.inventory.InventoryReleaseResultEvent;
 import com.fulfillx.order.service.OrderService;
@@ -20,7 +20,7 @@ public class InventoryReleaseResultConsumer {
             topics = "inventory-release-results",
             groupId = "order-service"
     )
-    public void consume(String message) throws JsonProcessingException {
+    public void consume(String message) throws JacksonException {
         log.info("Received inventory release result event {}", message);
         InventoryReleaseResultEvent event = objectMapper.readValue(message, InventoryReleaseResultEvent.class);
         orderService.handleInventoryReleaseResult(event);
