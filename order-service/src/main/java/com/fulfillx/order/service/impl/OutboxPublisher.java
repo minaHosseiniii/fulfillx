@@ -76,8 +76,9 @@ public class OutboxPublisher {
     private String resolveTopic(String eventType) {
         return switch (eventType) {
             case "RESERVE_INVENTORY" -> "inventory-reservation-commands";
+            case "RELEASE_INVENTORY" -> "inventory-release-commands";
             case "ORDER_CREATED" -> notificationEventsTopic;
-            case "PROCESS_PAYMENT" -> "processing-payment-commands";
+            case "PROCESS_PAYMENT" -> "payment-processing-commands";
             default -> throw new IllegalStateException("Unknown outbox event type: " + eventType);
         };
     }

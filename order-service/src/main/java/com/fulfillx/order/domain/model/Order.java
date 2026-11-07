@@ -209,6 +209,11 @@ public class Order extends BaseEntity {
         this.orderStatus = OrderStatus.CANCELLED;
     }
 
+    public void startCompensation() {
+        requireStatus(OrderStatus.PAYMENT_FAILED);
+        this.orderStatus = OrderStatus.CANCELLATION_PENDING;
+    }
+
     public Money calculateTotalAmount() {
         if (items == null || items.isEmpty()) {
             throw new IllegalStateException("Cannot calculate total amount for an empty order");

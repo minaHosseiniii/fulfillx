@@ -16,8 +16,11 @@ import com.fulfillx.order.domain.model.OutboxEvent;
 import com.fulfillx.order.domain.model.enums.OrderStatus;
 import com.fulfillx.order.events.OrderCreatedEvent;
 import com.fulfillx.order.events.messaging.InventoryReservationResultEvent;
+import com.fulfillx.order.events.saga.inventory.InventoryReleaseResultEvent;
 import com.fulfillx.order.events.saga.inventory.InventoryReservationItem;
+import com.fulfillx.order.events.saga.inventory.ReleaseInventoryCommand;
 import com.fulfillx.order.events.saga.inventory.ReserveInventoryCommand;
+import com.fulfillx.order.events.saga.payment.PaymentProcessingResultEvent;
 import com.fulfillx.order.events.saga.payment.ProcessPaymentCommand;
 import com.fulfillx.order.mapper.OrderMapper;
 import com.fulfillx.order.repository.OrderRepository;
@@ -96,6 +99,7 @@ public class OrderServiceImpl implements OrderService {
                     command.eventId(),
                     "ORDER",
                     command.orderId(),
+                    command.sagaId(),
                     "RESERVE_INVENTORY",
                     payload
             );
@@ -121,6 +125,7 @@ public class OrderServiceImpl implements OrderService {
                     orderCreatedEvent.eventId(),
                     "ORDER",
                     savedOrder.getId(),
+                    sagaId,
                     orderCreatedEvent.eventType(),
                     payload
             );
@@ -142,6 +147,21 @@ public class OrderServiceImpl implements OrderService {
             throw new IllegalStateException("Saga id mismatch for order: " + event.orderId());
         }
 
+        boolean paymentCommandExists =
+                outboxEventRepository
+                        .findByAggregateIdAndAggregateTypeAndSagaIdAndEventType(
+                                order.getId(),
+                                "ORDER",
+                                order.getSagaId(),
+                                "PROCESS_PAYMENT"
+                        )
+                        .isPresent();
+
+        if (paymentCommandExists) {
+            return;
+        }
+
+
         if (order.getOrderStatus() != OrderStatus.INVENTORY_RESERVATION_PENDING) {
             return;
         }
@@ -155,7 +175,7 @@ public class OrderServiceImpl implements OrderService {
         Money totalAmount = order.calculateTotalAmount();
         ProcessPaymentCommand processPaymentCommand = new ProcessPaymentCommand(
                 UUID.randomUUID(),
-                UUID.randomUUID(),
+                order.getSagaId(),
                 order.getId(),
                 totalAmount.getAmount(),
                 totalAmount.getCurrency(),
@@ -167,6 +187,7 @@ public class OrderServiceImpl implements OrderService {
                     processPaymentCommand.eventId(),
                     "ORDER",
                     order.getId(),
+                    processPaymentCommand.sagaId(),
                     "PROCESS_PAYMENT",
                     payload
             );
@@ -174,6 +195,84 @@ public class OrderServiceImpl implements OrderService {
             outboxEventRepository.save(outboxEvent);
         }catch (JsonProcessingException e) {
             throw new IllegalStateException("Could not serialize processPaymentCommand", e);
+        }
+    }
+
+    @Override
+    public void handlePaymentProcessingResult(PaymentProcessingResultEvent event) {
+        Order order = orderRepository.findById(event.orderId())
+                .orElseThrow(() ->
+                        new IllegalArgumentException(
+                                "Order not found: " + event.orderId()
+                        )
+                );
+        if (!event.sagaId().equals(order.getSagaId())) {
+            throw new IllegalStateException("Saga id mismatch for order: " + event.orderId());
+        }
+        if (order.getOrderStatus() != OrderStatus.PAYMENT_PENDING) {
+            return;
+        }
+        if (event.successful()) {
+            order.confirm();
+        } else {
+            boolean releaseCommandExists =
+                    outboxEventRepository
+                            .findByAggregateIdAndAggregateTypeAndSagaIdAndEventType(
+                                    order.getId(),
+                                    "ORDER",
+                                    order.getSagaId(),
+                                    "RELEASE_INVENTORY"
+                            )
+                            .isPresent();
+
+            if (releaseCommandExists) {
+                return;
+            }
+
+            order.markPaymentFailed();
+            order.startCompensation();
+
+            ReleaseInventoryCommand releaseInventoryCommand = new ReleaseInventoryCommand(
+                    UUID.randomUUID(),
+                    order.getSagaId(),
+                    order.getId(),
+                    Instant.now()
+            );
+
+            try {
+                String payload = objectMapper.writeValueAsString(releaseInventoryCommand);
+                OutboxEvent outboxEvent = new OutboxEvent(
+                        releaseInventoryCommand.eventId(),
+                        "ORDER",
+                        order.getId(),
+                        releaseInventoryCommand.sagaId(),
+                        "RELEASE_INVENTORY",
+                        payload
+                );
+                outboxEventRepository.save(outboxEvent);
+
+            } catch (JsonProcessingException e) {
+                throw new IllegalStateException("Could not serialize releaseInventoryCommand", e);
+            }
+        }
+
+    }
+
+    @Override
+    public void handleInventoryReleaseResult(InventoryReleaseResultEvent event) {
+        Order order = orderRepository.findById(event.orderId()).orElseThrow(() ->
+                new IllegalArgumentException("Order not found: " + event.orderId()));
+
+        if (!event.sagaId().equals(order.getSagaId())) {
+            throw new IllegalStateException("Saga id mismatch for order: " + event.orderId());
+        }
+        if (order.getOrderStatus() != OrderStatus.CANCELLATION_PENDING) {
+            return;
+        }
+        if (event.success()) {
+            order.completeCancellation();
+        } else {
+            throw new IllegalStateException("Inventory release failed for order: " + event.orderId() + " reason: " + event.reason());
         }
     }
 

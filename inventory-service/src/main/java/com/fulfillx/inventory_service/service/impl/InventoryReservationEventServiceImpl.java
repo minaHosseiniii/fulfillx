@@ -3,6 +3,7 @@ package com.fulfillx.inventory_service.service.impl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fulfillx.inventory_service.domain.model.OutboxEvent;
+import com.fulfillx.inventory_service.events.messaging.InventoryReleaseResultEvent;
 import com.fulfillx.inventory_service.events.messaging.InventoryReservationResultEvent;
 import com.fulfillx.inventory_service.repository.OutboxEventRepository;
 import com.fulfillx.inventory_service.service.InventoryReservationEventService;
@@ -22,7 +23,7 @@ public class InventoryReservationEventServiceImpl implements InventoryReservatio
     private final ObjectMapper objectMapper;
 
     @Transactional(propagation = Propagation.MANDATORY)
-    public void saveResult(InventoryReservationResultEvent event) {
+    public void saveReservationResult(InventoryReservationResultEvent event) {
 
         try {
             String payload = objectMapper.writeValueAsString(event);
@@ -95,6 +96,25 @@ public class InventoryReservationEventServiceImpl implements InventoryReservatio
                         null
                 );
 
-        saveResult(event);
+        saveReservationResult(event);
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.MANDATORY)
+    public void saveReleaseResult(InventoryReleaseResultEvent event) {
+        try {
+            String payload = objectMapper.writeValueAsString(event);
+            OutboxEvent outboxEvent = new OutboxEvent(
+                    event.eventId(),
+                    "INVENTORY_RELEASE",
+                    event.orderId(),
+                    event.sagaId(),
+                    "INVENTORY_RELEASE_RESULT",
+                    payload
+            );
+            outboxEventRepository.save(outboxEvent);
+        } catch (JsonProcessingException e) {
+            throw new IllegalStateException("Could not serialize inventory release result", e);
+        }
     }
 }

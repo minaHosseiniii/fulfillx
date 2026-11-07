@@ -17,9 +17,6 @@ import java.util.List;
 @Slf4j
 public class InventoryOutboxPublisher {
 
-    private static final String TOPIC =
-            "inventory-reservation-results";
-
     private final OutboxEventRepository outboxRepository;
 
     @Qualifier("outboxKafkaTemplate")
@@ -35,8 +32,9 @@ public class InventoryOutboxPublisher {
 
         for (OutboxEvent event : events) {
             try {
+                String topic = resolveTopic(event.getEventType());
                 kafkaTemplate.send(
-                        TOPIC,
+                        topic,
                         event.getAggregateId().toString(),
                         event.getPayload()
                 ).get();
@@ -52,5 +50,17 @@ public class InventoryOutboxPublisher {
                 );
             }
         }
+    }
+
+    private String resolveTopic(String eventType) {
+        return switch (eventType) {
+            case "INVENTORY_RESERVATION_RESULT" ->
+                    "inventory-reservation-results";
+
+            case "INVENTORY_RELEASE_RESULT" ->
+                    "inventory-release-results";
+
+            default -> throw new IllegalArgumentException("Unknown event type: " + eventType);
+        };
     }
 }

@@ -8,6 +8,7 @@ import com.fulfillx.inventory_service.dto.InventoryRequest;
 import com.fulfillx.inventory_service.dto.InventoryResponse;
 import com.fulfillx.inventory_service.dto.ReservationItemRequest;
 import com.fulfillx.inventory_service.dto.ReserveInventoryRequest;
+import com.fulfillx.inventory_service.events.messaging.InventoryReleaseResultEvent;
 import com.fulfillx.inventory_service.events.messaging.InventoryReservationResultEvent;
 import com.fulfillx.inventory_service.exception.InsufficientStockException;
 import com.fulfillx.inventory_service.exception.InventoryAlreadyExistsException;
@@ -223,7 +224,55 @@ public class InventoryServiceImpl implements InventoryService {
                         null
                 );
 
-        reservationEventService.saveResult(resultEvent);
+        reservationEventService.saveReservationResult(resultEvent);
+    }
+
+    @Override
+    public void releaseOrder(Long orderId, UUID sagaId) {
+        if (orderId == null || sagaId == null) {
+            throw new IllegalArgumentException("order id or saga id cannot be null");
+        }
+
+        boolean resultAlreadyExists =
+                outboxEventRepository
+                        .findByAggregateIdAndAggregateTypeAndSagaIdAndEventType(
+                                orderId,
+                                "INVENTORY_RELEASE",
+                                sagaId,
+                                "INVENTORY_RELEASE_RESULT"
+                        )
+                        .isPresent();
+
+        if (resultAlreadyExists) {
+            return;
+        }
+
+        List<InventoryReservation> reservations = reservationRepository.findAllByOrderIdAndSagaIdForUpdate(orderId, sagaId);
+        if (reservations.isEmpty()) {
+            throw new IllegalStateException(
+                    "No inventory reservations found for order id: " + orderId
+            );
+        }
+        for (InventoryReservation reservation : reservations) {
+            if (reservation.getStatus() == ReservationStatus.RELEASED) {
+                continue;
+            }
+            if (reservation.getStatus() != ReservationStatus.RESERVED) {
+                throw new IllegalStateException("Cannot release reservation in status: " + reservation.getStatus());
+            }
+            InventoryItem inventoryItem = findInventoryItemForUpdate(reservation.getProductId());
+            inventoryItem.release(reservation.getQuantity());
+            reservation.release();
+        }
+        InventoryReleaseResultEvent event = new InventoryReleaseResultEvent(
+                UUID.randomUUID(),
+                sagaId,
+                orderId,
+                Instant.now(),
+                true,
+                null
+        );
+        reservationEventService.saveReleaseResult(event);
     }
 
     private void validateExistingReservations(
