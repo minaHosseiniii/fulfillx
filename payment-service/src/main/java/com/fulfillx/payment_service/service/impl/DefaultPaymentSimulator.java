@@ -15,7 +15,7 @@ public class DefaultPaymentSimulator implements PaymentSimulator {
     @Override
     public PaymentSimulationResult process(Money money) {
 
-        boolean successful = ThreadLocalRandom.current().nextInt(100) < 50;
+        boolean successful = false;
 
         if (!successful) {
             return new PaymentSimulationResult(
