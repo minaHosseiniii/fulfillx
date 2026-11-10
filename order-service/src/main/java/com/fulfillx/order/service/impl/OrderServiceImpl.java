@@ -27,6 +27,7 @@ import com.fulfillx.order.repository.OrderRepository;
 import com.fulfillx.order.repository.OutboxEventRepository;
 import com.fulfillx.order.service.OrderService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,6 +37,7 @@ import java.util.UUID;
 @Service
 @Transactional
 @RequiredArgsConstructor
+@Slf4j
 public class OrderServiceImpl implements OrderService {
     private final OrderRepository orderRepository;
     private final OrderMapper orderMapper;
@@ -271,6 +273,11 @@ public class OrderServiceImpl implements OrderService {
         }
         if (event.successful()) {
             order.completeCancellation();
+            log.info(
+                    "Order cancellation completed. orderId={}, sagaId={}",
+                    order.getId(),
+                    event.sagaId()
+            );
         } else {
             throw new IllegalStateException("Inventory release failed for order: " + event.orderId() + " reason: " + event.reason());
         }
