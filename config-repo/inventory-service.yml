@@ -22,11 +22,7 @@ spring:
     consumer:
       group-id: inventory-service
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
-      properties:
-        spring.json.trusted.packages: com.fulfillx.inventory_service.events.messaging
-        spring.json.value.default.type: com.fulfillx.inventory_service.events.messaging.ReserveInventoryCommand
-        spring.json.use.type.headers: false
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
 
 eureka:
   client:
