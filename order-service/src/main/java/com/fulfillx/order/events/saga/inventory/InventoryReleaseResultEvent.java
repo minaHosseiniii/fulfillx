@@ -8,6 +8,6 @@ public record InventoryReleaseResultEvent(
         UUID sagaId,
         Long orderId,
         Instant occurredAt,
-        boolean success,
+        boolean successful,
         String reason
 ) {}
