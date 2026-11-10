@@ -269,7 +269,7 @@ public class OrderServiceImpl implements OrderService {
         if (order.getOrderStatus() != OrderStatus.CANCELLATION_PENDING) {
             return;
         }
-        if (event.success()) {
+        if (event.successful()) {
             order.completeCancellation();
         } else {
             throw new IllegalStateException("Inventory release failed for order: " + event.orderId() + " reason: " + event.reason());
