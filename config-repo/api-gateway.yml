@@ -40,3 +40,9 @@ spring:
               predicates:
                 - Path=/api/v1/notifications/**
 
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8180/realms/fulfillx
