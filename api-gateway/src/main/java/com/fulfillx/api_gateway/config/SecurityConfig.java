@@ -3,7 +3,6 @@ package com.fulfillx.api_gateway.config;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -25,6 +24,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
+import org.springframework.http.HttpMethod;
 
 @Configuration
 public class SecurityConfig {
@@ -37,7 +37,93 @@ public class SecurityConfig {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(auth -> auth.anyRequest().authenticated())
+                .authorizeHttpRequests(auth -> auth
+
+                        // Customer
+                        .requestMatchers(HttpMethod.POST, "/api/v1/customers")
+                        .hasAnyRole("SUPPORT", "ADMIN")
+
+                        .requestMatchers(HttpMethod.GET, "/api/v1/customers/**")
+                        .hasAnyRole("CUSTOMER", "SUPPORT", "ADMIN")
+
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/customers/**")
+                        .hasAnyRole("CUSTOMER", "SUPPORT", "ADMIN")
+
+                        .requestMatchers(HttpMethod.PATCH, "/api/v1/customers/**")
+                        .hasAnyRole("SUPPORT", "ADMIN")
+
+                        // Order
+                        .requestMatchers(HttpMethod.POST, "/api/v1/orders")
+                        .hasAnyRole("CUSTOMER", "ADMIN")
+
+                        // Payment
+
+                        .requestMatchers(HttpMethod.POST, "/api/v1/payments")
+                        .hasAnyRole("CUSTOMER", "ADMIN")
+
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/v1/payments/by-idempotency-key"
+                        )
+                        .hasAnyRole("SUPPORT", "ADMIN")
+
+                        .requestMatchers(HttpMethod.GET, "/api/v1/payments/*")
+                        .hasAnyRole("CUSTOMER", "SUPPORT", "ADMIN")
+
+                        .requestMatchers(HttpMethod.POST, "/api/v1/payments/*/cancel")
+                        .hasAnyRole("CUSTOMER", "ADMIN")
+
+                        // Catalog
+
+                        .requestMatchers(HttpMethod.GET, "/api/v1/products/*")
+                        .hasAnyRole("CUSTOMER", "SUPPORT", "ADMIN")
+
+                        .requestMatchers(HttpMethod.POST, "/api/v1/products")
+                        .hasRole("ADMIN")
+
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/products/*")
+                        .hasRole("ADMIN")
+
+                        .requestMatchers(
+                                HttpMethod.PATCH,
+                                "/api/v1/products/*/activate",
+                                "/api/v1/products/*/deactivate"
+                        )
+                        .hasRole("ADMIN")
+
+                        // Delivery
+
+                        .requestMatchers(HttpMethod.POST, "/api/v1/deliveries")
+                        .hasRole("ADMIN")
+
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/v1/deliveries/order/*",
+                                "/api/v1/deliveries/*"
+                        )
+                        .hasAnyRole("CUSTOMER", "SUPPORT", "ADMIN")
+
+                        .requestMatchers(HttpMethod.PATCH, "/api/v1/deliveries/**")
+                        .hasRole("ADMIN")
+
+                        // Inventory
+
+                        .requestMatchers(HttpMethod.GET, "/api/v1/inventory/*")
+                        .hasAnyRole("CUSTOMER", "SUPPORT", "ADMIN")
+
+                        .requestMatchers(HttpMethod.POST, "/api/v1/inventory")
+                        .hasRole("ADMIN")
+
+                        .requestMatchers(
+                                HttpMethod.POST,
+                                "/api/v1/inventory/*/reserve",
+                                "/api/v1/inventory/*/release",
+                                "/api/v1/inventory/*/deduct"
+                        )
+
+                        .denyAll()
+                        .anyRequest().denyAll()
+                )
                 .oauth2ResourceServer(oauth2 ->
                         oauth2.jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter()))
                 );
