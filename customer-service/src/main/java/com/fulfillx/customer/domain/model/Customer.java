@@ -20,6 +20,8 @@ public class Customer extends BaseEntity {
     private String phone;
     @Enumerated(EnumType.STRING)
     private CustomerStatus status;
+    @Column(name = "keycloak_user_id", unique = true, length = 36)
+    private String keycloakUserId;
 
     public Customer(
             String firstName,
@@ -32,6 +34,21 @@ public class Customer extends BaseEntity {
         this.email = email;
         this.phone = phone;
         this.status = CustomerStatus.ACTIVE;
+    }
+
+    public Customer(
+            String firstName,
+            String lastName,
+            String email,
+            String phone,
+            String keycloakUserId
+    ) {
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.email = email;
+        this.phone = phone;
+        this.status = CustomerStatus.ACTIVE;
+        this.keycloakUserId = keycloakUserId;
     }
 
     public void update(

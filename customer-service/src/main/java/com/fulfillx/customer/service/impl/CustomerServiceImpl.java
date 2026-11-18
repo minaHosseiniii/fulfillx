@@ -3,6 +3,7 @@ package com.fulfillx.customer.service.impl;
 import com.fulfillx.customer.domain.model.Customer;
 import com.fulfillx.customer.dto.CustomerRequest;
 import com.fulfillx.customer.dto.CustomerResponse;
+import com.fulfillx.customer.dto.CustomerUpdateRequest;
 import com.fulfillx.customer.exception.CustomerAlreadyExistException;
 import com.fulfillx.customer.exception.CustomerNotFoundException;
 import com.fulfillx.customer.mapper.CustomerMapper;
@@ -28,7 +29,8 @@ public class CustomerServiceImpl implements CustomerService {
                 request.getFirstName(),
                 request.getLastName(),
                 request.getEmail(),
-                request.getPhone()
+                request.getPhone(),
+                request.getKeycloakUserId()
         );
 
         Customer savedCustomer = customerRepository.save(customer);
@@ -37,27 +39,38 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
-    public CustomerResponse findCustomerById(Long customerId) {
-        Customer customer = customerRepository.findById(customerId).orElseThrow(() -> new CustomerNotFoundException("Customer not found"));
+    public CustomerResponse findCustomerById(Long customerId, String keycloakUserId, boolean isPrivileged) {
+        Customer customer = findCustomerWithOwnership(customerId, keycloakUserId, isPrivileged);
         return customerMapper.toCustomerResponse(customer);
     }
 
     @Override
-    public CustomerResponse updateCustomer(Long customerId, CustomerRequest request) {
-        Customer customer = customerRepository.findById(customerId).orElseThrow(() -> new CustomerNotFoundException("Customer not found"));
-        if (!customer.getEmail().equals(request.getEmail())
-                && customerRepository.existsByEmail(request.getEmail())) {
-            throw new CustomerAlreadyExistException(
-                    "Customer with email " + request.getEmail() + " already exists"
-            );
+    public CustomerResponse updateCustomer(Long customerId, CustomerUpdateRequest request, String keycloakUserId, boolean isPrivileged) {
+        Customer customer = findCustomerWithOwnership(customerId, keycloakUserId, isPrivileged);
+        if (!customer.getEmail().equals(request.getEmail()) && customerRepository.existsByEmail(request.getEmail())) {
+            throw new CustomerAlreadyExistException("Customer with email " + request.getEmail() + " already exists");
         }
+
         customer.update(
                 request.getFirstName(),
                 request.getLastName(),
                 request.getEmail(),
                 request.getPhone()
-                );
+        );
         return customerMapper.toCustomerResponse(customer);
+    }
+
+    private Customer findCustomerWithOwnership(
+            Long customerId,
+            String keycloakUserId,
+            boolean isPrivileged
+    ) {
+        if (isPrivileged) {
+            return customerRepository.findById(customerId).orElseThrow(() ->
+                    new CustomerNotFoundException("Customer with id " + customerId + " not found"));
+        }
+
+        return customerRepository.findByIdAndKeycloakUserId(customerId, keycloakUserId).orElseThrow(() -> new CustomerNotFoundException("Customer with id " + customerId + " not found"));
     }
 
     @Override

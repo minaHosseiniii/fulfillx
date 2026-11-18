@@ -3,6 +3,7 @@ package com.fulfillx.customer.service.impl;
 import com.fulfillx.customer.domain.model.Customer;
 import com.fulfillx.customer.dto.CustomerRequest;
 import com.fulfillx.customer.dto.CustomerResponse;
+import com.fulfillx.customer.dto.CustomerUpdateRequest;
 import com.fulfillx.customer.exception.CustomerAlreadyExistException;
 import com.fulfillx.customer.exception.CustomerNotFoundException;
 import com.fulfillx.customer.mapper.CustomerMapper;
@@ -36,7 +37,8 @@ class CustomerServiceImplTest {
                 "Mina",
                 "Hosseini",
                 "mina@gmail.com",
-                "09120000000"
+                "09120000000",
+                null
         );
 
         Customer customer = new Customer(
@@ -77,7 +79,8 @@ class CustomerServiceImplTest {
                 "Mina",
                 "Hosseini",
                 "mina@gmail.com",
-                "09120000000"
+                "09120000000",
+                "null"
         );
 
         when(customerRepository.existsByEmail(request.getEmail()))
@@ -117,7 +120,7 @@ class CustomerServiceImplTest {
                 .thenReturn(response);
 
         CustomerResponse result =
-                customerService.findCustomerById(customerId);
+                customerService.findCustomerById(customerId, "test-user-id", true);
 
         assertSame(response, result);
 
@@ -137,7 +140,7 @@ class CustomerServiceImplTest {
 
         assertThrows(
                 CustomerNotFoundException.class,
-                () -> customerService.findCustomerById(customerId)
+                () -> customerService.findCustomerById(customerId, "test-user-id", true)
         );
 
         verify(customerRepository)
@@ -157,7 +160,7 @@ class CustomerServiceImplTest {
                 "09120000000"
         );
 
-        CustomerRequest request = new CustomerRequest(
+        CustomerUpdateRequest request = new CustomerUpdateRequest(
                 "Mina Updated",
                 "Hosseini",
                 "new@gmail.com",
@@ -176,7 +179,7 @@ class CustomerServiceImplTest {
                 .thenReturn(response);
 
         CustomerResponse result =
-                customerService.updateCustomer(customerId, request);
+                customerService.updateCustomer(customerId, request, "test-user-id", true);
 
         assertSame(response, result);
 
@@ -205,7 +208,7 @@ class CustomerServiceImplTest {
                 "09120000000"
         );
 
-        CustomerRequest request = new CustomerRequest(
+        CustomerUpdateRequest request = new CustomerUpdateRequest(
                 "Mina",
                 "Hosseini",
                 "another@gmail.com",
@@ -220,7 +223,7 @@ class CustomerServiceImplTest {
 
         assertThrows(
                 CustomerAlreadyExistException.class,
-                () -> customerService.updateCustomer(customerId, request)
+                () -> customerService.updateCustomer(customerId, request, "test-user-id", true)
         );
 
         verify(customerRepository)
@@ -282,5 +285,38 @@ class CustomerServiceImplTest {
 
         verify(customerRepository)
                 .findById(customerId);
+    }
+
+    @Test
+    void shouldFindCustomerWhenUserOwnsTheCustomer() {
+        Long customerId = 1L;
+        String keycloakUserId = "user-123";
+
+        Customer customer = new Customer(
+                "Mina",
+                "Hosseini",
+                "mina@gmail.com",
+                "09120000000"
+        );
+
+        CustomerResponse response = new CustomerResponse();
+
+        when(customerRepository.findByIdAndKeycloakUserId(
+                customerId, keycloakUserId
+        )).thenReturn(Optional.of(customer));
+
+        when(customerMapper.toCustomerResponse(customer))
+                .thenReturn(response);
+
+        CustomerResponse result = customerService.findCustomerById(
+                customerId, keycloakUserId, false
+        );
+
+        assertSame(response, result);
+
+        verify(customerRepository)
+                .findByIdAndKeycloakUserId(customerId, keycloakUserId);
+
+        verify(customerRepository, never()).findById(customerId);
     }
 }
