@@ -22,6 +22,8 @@ spring:
     openfeign:
       circuitbreaker:
         enabled: true
+        alphanumeric-ids:
+          enabled: false
 
   kafka:
     bootstrap-servers: localhost:9092
