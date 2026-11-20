@@ -18,6 +18,11 @@ spring:
   flyway:
     enabled: true
 
+  cloud:
+    openfeign:
+      circuitbreaker:
+        enabled: true
+
   kafka:
     bootstrap-servers: localhost:9092
     producer:
@@ -43,3 +48,25 @@ eureka:
   client:
     service-url:
       defaultZone: http://localhost:8761/eureka
+
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      customerService:
+        sliding-window-type: COUNT_BASED
+        sliding-window-size: 10
+        minimum-number-of-calls: 5
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 10s
+        permitted-number-of-calls-in-half-open-state: 3
+        automatic-transition-from-open-to-half-open-enabled: true
+
+      catalogService:
+        sliding-window-type: COUNT_BASED
+        sliding-window-size: 10
+        minimum-number-of-calls: 5
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 10s
+        permitted-number-of-calls-in-half-open-state: 3
+        automatic-transition-from-open-to-half-open-enabled: true
