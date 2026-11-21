@@ -2,7 +2,6 @@ package com.fulfillx.order.service.impl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fulfillx.order.client.CatalogClient;
 import com.fulfillx.order.client.CustomerClient;
 import com.fulfillx.order.client.dto.CustomerResponse;
 import com.fulfillx.order.client.dto.ProductResponse;
@@ -26,6 +25,7 @@ import com.fulfillx.order.mapper.OrderMapper;
 import com.fulfillx.order.repository.OrderRepository;
 import com.fulfillx.order.repository.OutboxEventRepository;
 import com.fulfillx.order.service.OrderService;
+import com.fulfillx.order.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -43,7 +43,7 @@ public class OrderServiceImpl implements OrderService {
     private final OrderMapper orderMapper;
     private final OutboxEventRepository outboxEventRepository;
     private final ObjectMapper objectMapper;
-    private final CatalogClient catalogClient;
+    private final ProductService productService;
     private final CustomerClient customerClient;
 
     @Override
@@ -60,7 +60,7 @@ public class OrderServiceImpl implements OrderService {
         );
 
         for (CreateOrderItemRequest itemRequest: orderRequest.items()) {
-            ProductResponse product = catalogClient.getProduct(itemRequest.productId());
+            ProductResponse product = productService.getProduct(itemRequest.productId());
             if (!"ACTIVE".equals(product.status())) {
                 throw new IllegalArgumentException("Can not create order for inactive product: " + itemRequest.productId());
             }
