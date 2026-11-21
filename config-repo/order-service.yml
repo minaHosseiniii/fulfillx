@@ -96,5 +96,5 @@ management:
 
 logging:
   level:
-    io.github.resilience4j: DEBUG
-    org.springframework.cloud.openfeign: DEBUG
+    org.springframework.cache: TRACE
+    org.springframework.data.redis.cache: TRACE
