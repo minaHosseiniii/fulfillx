@@ -74,6 +74,12 @@ resilience4j:
         automatic-transition-from-open-to-half-open-enabled: true
 
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,circuitbreakers,circuitbreakerevents
+
 logging:
   level:
     io.github.resilience4j: DEBUG
