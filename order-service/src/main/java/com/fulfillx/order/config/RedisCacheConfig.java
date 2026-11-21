@@ -17,8 +17,7 @@ public class RedisCacheConfig {
 
     @Bean
     public RedisCacheManager cacheManager(
-            RedisConnectionFactory connectionFactory,
-            ObjectMapper objectMapper
+            RedisConnectionFactory connectionFactory
     ) {
         RedisCacheConfiguration config = RedisCacheConfiguration
                 .defaultCacheConfig()
@@ -26,7 +25,7 @@ public class RedisCacheConfig {
                 .serializeValuesWith(
                         RedisSerializationContext.SerializationPair
                                 .fromSerializer(
-                                        new GenericJackson2JsonRedisSerializer(objectMapper)
+                                        new GenericJackson2JsonRedisSerializer()
                                 )
                 );
 
