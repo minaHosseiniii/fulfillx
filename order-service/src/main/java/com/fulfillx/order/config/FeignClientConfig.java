@@ -27,6 +27,7 @@ public class FeignClientConfig {
             if (authentication instanceof JwtAuthenticationToken jwtAuth) {
 
                 String token = jwtAuth.getToken().getTokenValue();
+                System.out.println("JWT token found: " + (jwtAuth.getToken() != null));
 
                 requestTemplate.header(
                         "Authorization",
