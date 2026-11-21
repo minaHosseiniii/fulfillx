@@ -50,6 +50,10 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/v1/orders")
                         .hasAnyRole("CUSTOMER", "ADMIN")
 
+                        .requestMatchers(
+                                "/actuator/circuitbreakers",
+                                "/actuator/circuitbreakerevents"
+                        ).permitAll()
                         .anyRequest().denyAll()
                 )
 
