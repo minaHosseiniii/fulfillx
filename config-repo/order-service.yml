@@ -29,6 +29,7 @@ spring:
       resilience4j:
         enableSemaphoreDefaultBulkhead: true
         disable-time-limiter: true
+        disable-thread-pool: true
 
   kafka:
     bootstrap-servers: localhost:9092
