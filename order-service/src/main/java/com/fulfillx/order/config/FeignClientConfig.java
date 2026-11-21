@@ -18,6 +18,12 @@ public class FeignClientConfig {
             var authentication =
                     SecurityContextHolder.getContext().getAuthentication();
 
+            System.out.println("Authentication: " + authentication);
+            System.out.println("Authentication Type: " +
+                    (authentication != null
+                            ? authentication.getClass().getName()
+                            : "null"));
+
             if (authentication instanceof JwtAuthenticationToken jwtAuth) {
 
                 String token = jwtAuth.getToken().getTokenValue();
