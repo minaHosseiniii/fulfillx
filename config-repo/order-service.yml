@@ -28,6 +28,7 @@ spring:
     circuitbreaker:
       resilience4j:
         enableSemaphoreDefaultBulkhead: true
+        disable-time-limiter: true
 
   kafka:
     bootstrap-servers: localhost:9092
