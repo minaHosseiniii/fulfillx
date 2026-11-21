@@ -25,6 +25,10 @@ spring:
         alphanumeric-ids:
           enabled: true
 
+    circuitbreaker:
+      resilience4j:
+        enableSemaphoreDefaultBulkhead: true
+
   kafka:
     bootstrap-servers: localhost:9092
     producer:
