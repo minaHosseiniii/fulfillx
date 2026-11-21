@@ -23,7 +23,7 @@ spring:
       circuitbreaker:
         enabled: true
         alphanumeric-ids:
-          enabled: false
+          enabled: true
 
   kafka:
     bootstrap-servers: localhost:9092
@@ -72,3 +72,9 @@ resilience4j:
         wait-duration-in-open-state: 10s
         permitted-number-of-calls-in-half-open-state: 3
         automatic-transition-from-open-to-half-open-enabled: true
+
+
+logging:
+  level:
+    io.github.resilience4j: DEBUG
+    org.springframework.cloud.openfeign: DEBUG
