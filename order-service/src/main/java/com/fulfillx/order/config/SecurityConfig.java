@@ -53,7 +53,8 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/actuator/circuitbreakers",
                                 "/actuator/circuitbreakerevents",
-                                "/actuator/prometheus"
+                                "/actuator/prometheus",
+                                "/actuator/metrics/**"
                         ).permitAll()
                         .anyRequest().denyAll()
                 )
