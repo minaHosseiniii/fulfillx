@@ -157,6 +157,31 @@ services:
       keycloak-db:
         condition: service_healthy
 
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: fulfillx-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: fulfillx-grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+    depends_on:
+      - prometheus
+    restart: unless-stopped
 
 volumes:
   order-db-data:
@@ -169,3 +194,5 @@ volumes:
   notification-db-data:
   keycloak-db-data:
   redis-data:
+  prometheus-data:
+  grafana-data:
